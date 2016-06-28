@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @file
+ * Contains module hooks.
+ */
 
 /**
  * Implements hook_theme().
@@ -21,8 +25,8 @@ function hm_newsletter_theme($existing, $type, $theme, $path) {
         'headline' => '',
         'text' => '',
         'confirmation_headline' => '',
-        'confirmation_text' => ''
-      )
+        'confirmation_text' => '',
+      ),
     ),
   );
 }

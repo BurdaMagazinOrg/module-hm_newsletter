@@ -52,7 +52,7 @@
 
 .hm_newsletter__success {
   background-color: #dff0d8;
-  border-color: #D4E4CD;
+  border-color: #d4e4cd;
   color: #000;
 }
 
@@ -167,6 +167,6 @@
 
 .hm_newsletter .form-horizontal,
 .hm_newsletter.state-privacy .hm_newsletter__privacy,
-.hm_newsletter.state-success .hm_newsletter__success  {
+.hm_newsletter.state-success .hm_newsletter__success {
   display: block;
 }

@@ -1,16 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: timowelde
- * Date: 09.03.16
- * Time: 15:04
- */
 
 namespace Drupal\hm_newsletter\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Link;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -26,7 +19,7 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 
   protected $configFactory;
   private $formElements = [
-    'title', 'firstname', 'name', 'zipcode', 'location', 'birthdate'
+    'title', 'firstname', 'name', 'zipcode', 'location', 'birthdate',
   ];
 
   /**
@@ -82,15 +75,15 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
       '#theme' => 'hm_newsletter_form',
       '#attached' => array(
         'library' => array(
-          'hm_newsletter/base'
+          'hm_newsletter/base',
         ),
         'drupalSettings' => array(
           'hm_newsletter' => array(
             'env' => $settings->get('hm_environment'),
-            'clientid' => $settings->get('hm_client_id')
-          )
-        )
-      )
+            'clientid' => $settings->get('hm_client_id'),
+          ),
+        ),
+      ),
     ];
 
     $this->preprocessBlockConfig($render, $blockConfig);
@@ -101,8 +94,8 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 
   private function preprocessBlockConfig(&$vars, $blockConfig) {
     foreach ($this->formElements as $element) {
-      if(isset($blockConfig[$element])) {
-        $vars['#'.$element] = $blockConfig[$element];
+      if (isset($blockConfig[$element])) {
+        $vars['#' . $element] = $blockConfig[$element];
       }
     }
   }
@@ -123,7 +116,7 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
     $vars['#confirmation_headline'] = $blockConfig['confirmation_headline'];
     $vars['#confirmation_text'] = $blockConfig['confirmation_text']['value'];
 
-    // Privacy text
+    // Privacy text.
     // @FIXME privacy text seems to be unused
     $hm_link_privacy = $settings->get('hm_link_privacy');
     if (!empty($hm_link_privacy)) {
@@ -134,37 +127,40 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
     // Client id.
     $vars['#client_id'] = $settings->get('hm_client_id');
 
-    // Imprint
+    // Imprint.
     $vars['#imprint_text'] = $settings->get('hm_imprint_text');
 
     // Birthday values.
     $birthday = array();
     // Days.
     $birthday['day'][] = '';
-    foreach(range(1, 31) as $number) {
+    foreach (range(1, 31) as $number) {
       $birthday['day'][$number] = $number . '.';
     }
     // Months.
     $birthday['month'][] = '';
-    foreach(range(1, 12) as $number) {
+    foreach (range(1, 12) as $number) {
       $birthday['month'][$number] = $number . '.';
     }
     // Years.
     $year = date('Y');
     $birthday['year'][] = '';
-    foreach(range(($year-100) , ($year-16)) as $number) {
+    foreach (range(($year - 100), ($year - 16)) as $number) {
       $birthday['year'][$number] = $number;
     }
     $vars['#birthday'] = $birthday;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function blockForm($form, FormStateInterface $form_state) {
     $config = $this->getConfiguration();
     $form = parent::blockForm($form, $form_state);
 
     $form['hm_newsletter_fieldset'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Anzuzeigende Elemente')
+      '#title' => $this->t('Anzuzeigende Elemente'),
     ];
 
     foreach ($this->formElements as $element) {
@@ -172,7 +168,7 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
         '#type' => 'checkbox',
         '#title' => ucfirst($element),
 //      '#title_display' => 'before',
-        '#default_value' => (isset($config[$element])) ? $config[$element] : 1
+        '#default_value' => (isset($config[$element])) ? $config[$element] : 1,
       ];
     }
 
@@ -185,8 +181,8 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
      The key consists of CLIENTID_NEWSLETTERID, and is used by the thsixty api. The label will be used in displayed values and edit forms.'),
         '#type' => 'textarea',
         '#default_value' => !empty($config['newsletters']) ? $config['newsletters'] : '',
-        '#required' => TRUE
-      )
+        '#required' => TRUE,
+      ),
     ];
 
     $form['hm_newsletter_fieldset_content'] = [
@@ -221,12 +217,15 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
         '#default_value' => !empty($config['confirmation_text']) ? $config['confirmation_text']['value'] : '',
         '#rows' => 8,
         '#cols' => 128,
-      )
+      ),
     ];
 
     return $form;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function blockSubmit($form, FormStateInterface $form_state) {
     parent::blockSubmit($form, $form_state);
 
@@ -240,9 +239,5 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
       $this->setConfigurationValue($key, $value);
     }
   }
-
-
-
-
 
 }

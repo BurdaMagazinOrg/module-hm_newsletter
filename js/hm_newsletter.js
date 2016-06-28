@@ -1,22 +1,27 @@
 /**
+ * @file
  * Extend Number functions and add pad function to
  * allow leading zeros.
  */
+
 Number.prototype.pad = function (size) {
   var s = String(this);
   while (s.length < (size || 2)) {
-    s = "0" + s;
+    s = '0' + s;
   }
   return s;
 };
 
 (function ($, Drupal, window, document) {
+
   /**
    * Harbourmaster Newsletter object.
+   *
+   * @param context
    * @constructor
    */
   function HmNewsletter(context) {
-    if($(context).is('.hm_newsletter')) {
+    if ($(context).is('.hm_newsletter')) {
       this.$wrapper = $(context);
     }
     else {
@@ -29,15 +34,15 @@ Number.prototype.pad = function (size) {
     this.$error = this.$wrapper.find('.hm_newsletter__error');
     this.$privacy = this.$wrapper.find('.hm_newsletter__privacy');
 
-    this.$wrapper.addClass('initialized')
+    this.$wrapper.addClass('initialized');
   }
 
-  // Static vars and functions
+  // Static vars and functions.
   $.extend(HmNewsletter, {
     STATE_INITIAL: 'state-initial',
     STATE_PRIVACY: 'state-privacy',
     STATE_SUCCESS: 'state-success',
-    // TODO: Maybe save the permissions just once and reuse it
+    // TODO: Maybe save the permissions just once and reuse it.
     permissions: null,
     // Global list of possible fields.
     fields: {
@@ -47,9 +52,9 @@ Number.prototype.pad = function (size) {
       postalcode: null,
       city: null,
       dateofbirth: null,
-      email: null,
+      email: null
     },
-    // Interpret error messages returned from thsixty
+    // Interpret error messages returned from thsixty.
     responseInterpreter: function (responseData) {
       var interpretedResponse = {
         code: responseData.code,
@@ -62,10 +67,12 @@ Number.prototype.pad = function (size) {
           interpretedResponse.field = 'email';
           interpretedResponse.message = 'Die E-Mail-Adresse ist erforderlich.';
           break;
+
         case 'InvalidEmail':
           interpretedResponse.field = 'email';
           interpretedResponse.message = 'Die E-Mail-Adresse muss gültig sein.';
           break;
+
         default:
           interpretedResponse.message = responseData.code.replace(/([A-Z])/g, ' $1');
           break;
@@ -85,20 +92,20 @@ Number.prototype.pad = function (size) {
       // Click should no affect label checkbox.
       e.preventDefault();
       if (!$(this).hasClass('visible')) {
-        $thisObj.setViewState(HmNewsletter.STATE_PRIVACY)
+        $thisObj.setViewState(HmNewsletter.STATE_PRIVACY);
       }
       else {
-        $thisObj.setViewState(HmNewsletter.STATE_INITIAL)
+        $thisObj.setViewState(HmNewsletter.STATE_INITIAL);
       }
     });
 
-    $thisObj.$privacy.find('.icon-close').click(function(e) {
-      $thisObj.setViewState(HmNewsletter.STATE_INITIAL)
-    })
+    $thisObj.$privacy.find('.icon-close').click(function (e) {
+      $thisObj.setViewState(HmNewsletter.STATE_INITIAL);
+    });
   };
 
   /**
-   * Submit function for newsletter
+   * Submit function for newsletter.
    */
   HmNewsletter.prototype.bindSubmit = function () {
 
@@ -127,7 +134,7 @@ Number.prototype.pad = function (size) {
           }
           // Check for valid email address.
           var regex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}/igm;
-          if ((index == 'email' && val.length > 0) && !regex.test(val)) {
+          if ((index === 'email' && val.length > 0) && !regex.test(val)) {
             $thisObj.addAlert('danger', index,
               'Bitte überprüfen Sie die Eingabe der E-Mail Adresse.');
             valid = false;
@@ -160,8 +167,8 @@ Number.prototype.pad = function (size) {
       var client_groups = [];
       $.each(groups, function (index, value) {
         var group_data = value.split('_');
-        if (group_data.length == 2) {
-          if (client_groups[group_data[0]] === undefined) {
+        if (group_data.length === 2) {
+          if (typeof client_groups[group_data[0]] === 'undefined') {
             client_groups[group_data[0]] = [];
           }
           client_groups[group_data[0]].push(group_data[1]);
@@ -177,10 +184,10 @@ Number.prototype.pad = function (size) {
       // Agreements.
       var $promo_permissions = $thisObj.$form.find('[name="promo_permission"]');
       jQuery.each($promo_permissions, function (index, elem) {
-        if($(elem).is(':checked') === true) {
+        if ($(elem).is(':checked') === true) {
           var agreement = {
-            "version": $(elem).data('version'),
-            "name": $(elem).data('name')
+            version: $(elem).data('version'),
+            name: $(elem).data('name')
           };
           agreements.push(agreement);
         }
@@ -216,15 +223,15 @@ Number.prototype.pad = function (size) {
         data.agreements = agreements;
         promises.push($thisObj.sendSubscribeRequest(data));
       }
-      
-      if(valid) {
-        $.when.apply($, promises).done(function() {
+
+      if (valid) {
+        $.when.apply($, promises).done(function () {
           $thisObj.showSuccess();
-        }).fail(function(err) {
+        }).fail(function (err) {
           $thisObj.showError(err);
-        }).always(function(e) {
+        }).always(function (e) {
           $thisObj.scrollPage();
-        })
+        });
       }
 
       return false;
@@ -238,7 +245,7 @@ Number.prototype.pad = function (size) {
     var $thisObj = this;
     // Scroll page up to newsletter form.
     $('html, body').animate({
-      scrollTop: $thisObj.$wrapper.offset().top-150
+      scrollTop: $thisObj.$wrapper.offset().top - 150
     }, 200);
   };
 
@@ -252,13 +259,13 @@ Number.prototype.pad = function (size) {
   HmNewsletter.prototype.addAlert = function (type, field, message) {
 
     // Mark field as error.
-    if (type == 'danger' && field !== undefined) {
+    if (type === 'danger' && typeof field !== 'undefined') {
       this.setValidationState(this.formField(field), 'has-error');
     }
     var alertString = '<div class="alert alert-' + type + '" role="alert">' + message + '</div>';
     // Check if alertString already exists.
     var alertshtml = this.$alerts.html();
-    if (alertshtml.indexOf(alertString) == -1) {
+    if (alertshtml.indexOf(alertString) === -1) {
       this.$alerts.append(alertString);
     }
   };
@@ -273,7 +280,6 @@ Number.prototype.pad = function (size) {
     el.parents('.form-group').addClass(state);
   };
 
-
   /**
    * Removes all alerts from the newsletter form allert section.
    */
@@ -283,7 +289,8 @@ Number.prototype.pad = function (size) {
   };
 
   /**
-   * Sets classes according to states, the view can be in
+   * Sets classes according to states, the view can be in.
+   *
    * @param pState
    */
   HmNewsletter.prototype.setViewState = function (pState) {
@@ -295,28 +302,28 @@ Number.prototype.pad = function (size) {
         this.$wrapper.addClass(pState);
         break;
     }
-  }
+  };
 
   /**
    * Get the given form field.
    *
    * @param {string} field
+   *
    * @returns {*}
    */
   HmNewsletter.prototype.formField = function (field) {
     return this.$form.find('[name="' + field + '"]');
   };
 
-
   /**
    * Show success after subscribing to newsletter.
    */
   HmNewsletter.prototype.showSuccess = function () {
     // Reset complete form.
-    this.$form.trigger("reset");
-    this.setViewState(HmNewsletter.STATE_SUCCESS)
+    this.$form.trigger('reset');
+    this.setViewState(HmNewsletter.STATE_SUCCESS);
 
-    this.$wrapper.trigger('newsletter:success')
+    this.$wrapper.trigger('newsletter:success');
   };
 
   /**
@@ -326,13 +333,14 @@ Number.prototype.pad = function (size) {
     var responseData = BaseNewsletterView.responseInterpreter(err);
     this.addAlert('danger', responseData.field, responseData.message);
 
-    this.setViewState(HmNewsletter.STATE_INITIAL)
+    this.setViewState(HmNewsletter.STATE_INITIAL);
 
-    this.$wrapper.trigger('newsletter:error')
+    this.$wrapper.trigger('newsletter:error');
   };
 
   /**
    * Sends subscribe request with given data.
+   *
    * @param data
    */
   HmNewsletter.prototype.sendSubscribeRequest = function (data) {
@@ -342,20 +350,18 @@ Number.prototype.pad = function (size) {
     window.thsixtyQ.push(['newsletter.subscribe', {
       params: data,
       success: function () {
-        deferred.resolve()
+        deferred.resolve();
       },
       error: $.proxy(function (err) {
-          deferred.reject(err)
-        }, this)
+        deferred.reject(err);
+      }, this)
     }]);
 
-    return deferred.promise()
+    return deferred.promise();
   };
 
   /**
-   * Get permission text from API.
-   *
-   * @return object
+   * Set permission text from API.
    */
   HmNewsletter.prototype.setPermissionTexts = function () {
     var $thisObj = this;
@@ -366,7 +372,7 @@ Number.prototype.pad = function (size) {
         // Show permissions.
         jQuery.each(permissions, function (index, value) {
           // For now we only show the privacy checkbox.
-          if (index == 'datenschutzeinwilligung' || index == 'privacy') {
+          if (index === 'datenschutzeinwilligung' || index === 'privacy') {
             // For now we fake the machine name of the permission - should be delivered ba service call also.
             var machine_name = index;
             var version = value.version;
@@ -376,7 +382,7 @@ Number.prototype.pad = function (size) {
             markup += '</label></div>';
             $thisObj.$perms.append(markup);
 
-            if (index == 'datenschutzeinwilligung' && value.markup.text_body) {
+            if (index === 'datenschutzeinwilligung' && value.markup.text_body) {
               $thisObj.$privacy.find('.container-content-dynamic').empty().append(value.markup.text_body);
             }
           }
@@ -385,7 +391,7 @@ Number.prototype.pad = function (size) {
         });
       },
       error: function (err) {
-        console.error(err)
+        console.error(err);
       }
     }]);
   };
@@ -395,7 +401,9 @@ Number.prototype.pad = function (size) {
    */
   Drupal.behaviors.hmNewsletter = {
     attach: function (context, settings) {
-      if($('.hm_newsletter', context).hasClass('initialized') || $(context).is('.hm_newsletter.initialized')) return;
+      if ($('.hm_newsletter', context).hasClass('initialized') || $(context).is('.hm_newsletter.initialized')) {
+        return;
+      }
 
       var NL = new HmNewsletter(context);
       // Set permission texts.
@@ -404,5 +412,4 @@ Number.prototype.pad = function (size) {
       NL.bindSubmit();
     }
   };
-})
-(jQuery, Drupal, this, this.document);
+})(jQuery, Drupal, this, this.document);
