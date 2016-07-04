@@ -1,16 +1,16 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\hm_newsletter\Form\HmNewsletterNewsletterAdminForm.
- */
-
 namespace Drupal\hm_newsletter\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 
+/**
+ * Class HmNewsletterNewsletterAdminForm.
+ *
+ * @package Drupal\hm_newsletter\Form
+ */
 class HmNewsletterNewsletterAdminForm extends ConfigFormBase {
 
   /**
@@ -45,7 +45,10 @@ class HmNewsletterNewsletterAdminForm extends ConfigFormBase {
     return ['hm_newsletter.settings'];
   }
 
-  public function buildForm(array $form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state) {
     $hm_newsletter_settings = $this->config('hm_newsletter.settings');
     $form = [];
     $form['hm_newsletter'] = [
@@ -64,7 +67,6 @@ class HmNewsletterNewsletterAdminForm extends ConfigFormBase {
       '#default_value' => $hm_newsletter_settings->get('hm_environment'),
     );
 
-
     $form['hm_newsletter']['hm_client_id'] = array(
       '#title' => $this->t('Client id'),
       '#description' => $this->t('Client id will be used for agreements.'),
@@ -72,16 +74,6 @@ class HmNewsletterNewsletterAdminForm extends ConfigFormBase {
       '#required' => TRUE,
       '#default_value' => $hm_newsletter_settings->get('hm_client_id'),
     );
-
-
-    $form['hm_newsletter']['hm_available_newsletters'] = array(
-      '#title' => $this->t('Available newsletters'),
-      '#description' => $this->t('Enter one value per line, in the format key|label.
-     The key consists of CLIENTID_NEWSLETTERID, and is used by the thsixty api. The label will be used in displayed values and edit forms.'),
-      '#type' => 'textarea',
-      '#default_value' => $hm_newsletter_settings->get('hm_available_newsletters'),
-    );
-
 
     $form['hm_newsletter']['hm_imprint_text'] = array(
       '#title' => $this->t('Imprint text'),
