@@ -34,6 +34,8 @@ Number.prototype.pad = function (size) {
     this.$error = this.$wrapper.find('.hm_newsletter__error');
     this.$privacy = this.$wrapper.find('.hm_newsletter__privacy');
 
+    this.strings = JSON.parse(this.$wrapper.find('.hm_newsletter__strings').html());
+
     this.$wrapper.addClass('initialized');
   }
 
@@ -53,32 +55,6 @@ Number.prototype.pad = function (size) {
       city: null,
       dateofbirth: null,
       email: null
-    },
-    // Interpret error messages returned from thsixty.
-    responseInterpreter: function (responseData) {
-      var interpretedResponse = {
-        code: responseData.code,
-        field: null,
-        message: null
-      };
-
-      switch (responseData.code) {
-        case 'EmailCannotBeEmpty':
-          interpretedResponse.field = 'email';
-          interpretedResponse.message = 'Die E-Mail-Adresse ist erforderlich.';
-          break;
-
-        case 'InvalidEmail':
-          interpretedResponse.field = 'email';
-          interpretedResponse.message = 'Die E-Mail-Adresse muss gültig sein.';
-          break;
-
-        default:
-          interpretedResponse.message = responseData.code.replace(/([A-Z])/g, ' $1');
-          break;
-      }
-
-      return interpretedResponse;
     }
   });
 
@@ -129,14 +105,15 @@ Number.prototype.pad = function (size) {
           user[index] = val;
           // When the field is required, the value must not be empty.
           if (val === '' && field.attr('required')) {
-            $thisObj.addAlert('danger', index, 'Das Feld ist erforderlich.');
+            $thisObj.addAlert('danger', index,
+              $thisObj.strings['required']);
             valid = false;
           }
           // Check for valid email address.
           var regex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}/igm;
           if ((index === 'email' && val.length > 0) && !regex.test(val)) {
             $thisObj.addAlert('danger', index,
-              'Bitte überprüfen Sie die Eingabe der E-Mail Adresse.');
+              $thisObj.strings['check_mail']);
             valid = false;
           }
         }
@@ -196,7 +173,7 @@ Number.prototype.pad = function (size) {
       // We only send request if groups or agreements are passed.
       if (valid && agreements.length === 0 && client_groups.length === 0) {
         $thisObj.addAlert('danger', 'promo_permission',
-          'Bitte bestätigen Sie die Datenschutzeinwilligung.');
+          $thisObj.strings['promo_permissions']);
         valid = false;
       }
 
@@ -330,7 +307,7 @@ Number.prototype.pad = function (size) {
    * Show error after failed subscribtion to newsletter.
    */
   HmNewsletter.prototype.showError = function (err) {
-    var responseData = BaseNewsletterView.responseInterpreter(err);
+    var responseData = this.responseInterpreter(err);
     this.addAlert('danger', responseData.field, responseData.message);
 
     this.setViewState(HmNewsletter.STATE_INITIAL);
@@ -339,12 +316,40 @@ Number.prototype.pad = function (size) {
   };
 
   /**
+   * Interpret error messages returned from thsixty.
+   */
+  HmNewsletter.prototype.responseInterpreter = function (responseData) {
+    var interpretedResponse = {
+      code: responseData.code,
+      field: null,
+      message: null
+    };
+
+    switch (responseData.code) {
+      case 'EmailCannotBeEmpty':
+        interpretedResponse.field = 'email';
+        interpretedResponse.message = this.strings['mail_required'];
+        break;
+
+      case 'InvalidEmail':
+        interpretedResponse.field = 'email';
+        interpretedResponse.message = this.strings['mail_malformed'];
+        break;
+
+      default:
+        interpretedResponse.message = responseData.code.replace(/([A-Z])/g, ' $1');
+        break;
+    }
+
+    return interpretedResponse;
+  };
+
+  /**
    * Sends subscribe request with given data.
    *
    * @param data
    */
   HmNewsletter.prototype.sendSubscribeRequest = function (data) {
-    var $thisObj = this;
     var deferred = $.Deferred();
 
     window.thsixtyQ.push(['newsletter.subscribe', {
