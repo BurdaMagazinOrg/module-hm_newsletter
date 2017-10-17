@@ -1,10 +1,11 @@
 /**
- * @file
  * Extend Number functions and add pad function to
  * allow leading zeros.
  */
 
 Number.prototype.pad = function (size) {
+  'use strict';
+
   var s = String(this);
   while (s.length < (size || 2)) {
     s = '0' + s;
@@ -13,11 +14,12 @@ Number.prototype.pad = function (size) {
 };
 
 (function ($, Drupal, window, document) {
+  'use strict';
 
   /**
    * Harbourmaster Newsletter object.
    *
-   * @param context
+   * @param {Object} context The context in DOM, in which the HmNewsletter should be attached
    * @constructor
    */
   function HmNewsletter(context) {
@@ -178,9 +180,10 @@ Number.prototype.pad = function (size) {
       }
 
       var promises = [];
+      var data;
       // Send subscribe request with newsletters.
       if (valid && client_groups.length) {
-        var data = {};
+        data = {};
         // Send request for every client and it's subscribed groups.
         client_groups.forEach(function (value, index, arr) {
           data.client = index;
@@ -193,7 +196,7 @@ Number.prototype.pad = function (size) {
 
       // Send subscribe request for agreements..
       if (valid && agreements.length) {
-        var data = {};
+        data = {};
         data.client = parseInt(client_id);
         data.groups = [];
         data.user = user;
@@ -227,11 +230,11 @@ Number.prototype.pad = function (size) {
   };
 
   /**
-   * Adds alert to the newsletter form's alert section.
+   * Adds alert to the alert section of the form.
    *
-   * @param type
-   * @param field
-   * @param message
+   * @param {string} type - The type of the alert, added as class
+   * @param {string} field - The name of the field, which triggers this function
+   * @param {string} message - A message, which will be shown in the alert
    */
   HmNewsletter.prototype.addAlert = function (type, field, message) {
 
@@ -248,17 +251,17 @@ Number.prototype.pad = function (size) {
   };
 
   /**
-   * Adds alert to the newsletter form's alert section.
+   * Sets the state as class, the form is in.
    *
-   * @param el
-   * @param state
+   * @param {Object} el - The element, which triggers this function
+   * @param {string} state - The state, as class
    */
   HmNewsletter.prototype.setValidationState = function (el, state) {
     el.parents('.form-group').addClass(state);
   };
 
   /**
-   * Removes all alerts from the newsletter form allert section.
+   * Removes all alerts from the newsletter form alert section.
    */
   HmNewsletter.prototype.removeAlerts = function () {
     this.$alerts.html('');
@@ -268,7 +271,7 @@ Number.prototype.pad = function (size) {
   /**
    * Sets classes according to states, the view can be in.
    *
-   * @param pState
+   * @param {string} pState - The state, the view should be in.
    */
   HmNewsletter.prototype.setViewState = function (pState) {
     this.$wrapper.removeClass(HmNewsletter.STATE_PRIVACY + ' ' + HmNewsletter.STATE_SUCCESS);
@@ -284,9 +287,9 @@ Number.prototype.pad = function (size) {
   /**
    * Get the given form field.
    *
-   * @param {string} field
+   * @param {string} field - The name of the field
    *
-   * @returns {*}
+   * @return {Object[]} - A jQuery object containing the formField
    */
   HmNewsletter.prototype.formField = function (field) {
     return this.$form.find('[name="' + field + '"]');
@@ -305,6 +308,8 @@ Number.prototype.pad = function (size) {
 
   /**
    * Show error after failed subscribtion to newsletter.
+   *
+   * @param {Object} err - The error from the thsixty API
    */
   HmNewsletter.prototype.showError = function (err) {
     var responseData = this.responseInterpreter(err);
@@ -347,7 +352,8 @@ Number.prototype.pad = function (size) {
   /**
    * Sends subscribe request with given data.
    *
-   * @param data
+   * @param {Object} data - The data, which should be sent to the thsixty API (and therefore to the Harbourmaster)
+   * @return {Object} - A jQuery deferred promise
    */
   HmNewsletter.prototype.sendSubscribeRequest = function (data) {
     var deferred = $.Deferred();
@@ -396,7 +402,8 @@ Number.prototype.pad = function (size) {
         });
       },
       error: function (err) {
-        console.error(err);
+        // TODO Handle errors
+        // console.error(err);
       }
     }]);
   };

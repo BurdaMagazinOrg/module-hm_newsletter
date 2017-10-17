@@ -3,6 +3,8 @@
  */
 
 (function ($, window, document) {
+  'use strict';
+
   Drupal.behaviors.thsixty = {
     attach: function (context) {
       var config = {
