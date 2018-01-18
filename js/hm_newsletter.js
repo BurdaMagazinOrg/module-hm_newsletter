@@ -32,7 +32,6 @@ Number.prototype.pad = function (size) {
     this.$alerts = this.$wrapper.find('.hm_newsletter__alerts');
     this.$success = this.$wrapper.find('.hm_newsletter__success');
     this.$error = this.$wrapper.find('.hm_newsletter__error');
-    this.$privacy = this.$wrapper.find('.hm_newsletter__privacy');
 
     this.strings = JSON.parse(this.$wrapper.find('.hm_newsletter__strings').html());
 
@@ -42,7 +41,6 @@ Number.prototype.pad = function (size) {
   // Static vars and functions.
   $.extend(HmNewsletter, {
     STATE_INITIAL: 'state-initial',
-    STATE_PRIVACY: 'state-privacy',
     STATE_SUCCESS: 'state-success',
     // TODO: Maybe save the permissions just once and reuse it.
     permissions: null,
@@ -63,20 +61,14 @@ Number.prototype.pad = function (size) {
    */
   HmNewsletter.prototype.bindMoreLinks = function () {
     var $thisObj = this;
+
     // Open more text div.
     $thisObj.$perms.find('.text-hidden-toggle').once().on('click', function (e) {
       // Click should no affect label checkbox.
       e.preventDefault();
-      if (!$(this).hasClass('visible')) {
-        $thisObj.setViewState(HmNewsletter.STATE_PRIVACY);
-      }
-      else {
-        $thisObj.setViewState(HmNewsletter.STATE_INITIAL);
-      }
-    });
 
-    $thisObj.$privacy.find('.icon-close').click(function (e) {
-      $thisObj.setViewState(HmNewsletter.STATE_INITIAL);
+      var labelFor = jQuery(this).closest('label').attr('for');
+      jQuery('#dynamic_' + labelFor).toggle();
     });
   };
 
@@ -271,13 +263,10 @@ Number.prototype.pad = function (size) {
    * @param pState
    */
   HmNewsletter.prototype.setViewState = function (pState) {
-    this.$wrapper.removeClass(HmNewsletter.STATE_PRIVACY + ' ' + HmNewsletter.STATE_SUCCESS);
+    this.$wrapper.removeClass(HmNewsletter.STATE_SUCCESS);
 
-    switch (pState) {
-      case HmNewsletter.STATE_SUCCESS:
-      case HmNewsletter.STATE_PRIVACY:
-        this.$wrapper.addClass(pState);
-        break;
+    if (pState === HmNewsletter.STATE_SUCCESS) {
+      this.$wrapper.addClass(pState);
     }
   };
 
@@ -372,25 +361,37 @@ Number.prototype.pad = function (size) {
     var $thisObj = this;
     window.thsixtyQ.push(['permissions.get', {
       success: function (permissions) {
+        var displayed_agreements = drupalSettings.hm_newsletter.displayed_agreements || [];
         // Clean up markup in permissions wrapper.
         $thisObj.$perms.html('');
         // Show permissions.
         jQuery.each(permissions, function (index, value) {
-          // For now we only show the privacy checkbox.
-          if (index === 'datenschutzeinwilligung' || index === 'privacy') {
-            // For now we fake the machine name of the permission - should be delivered ba service call also.
-            var machine_name = index;
-            var version = value.version;
-            var markup = '<div class="checkbox"><label for="promo_permission_' + index + '">';
-            markup += '<input data-version="' + version + '" data-name="' + machine_name + '" type="checkbox" name="promo_permission" class="promo_permission" id="promo_permission_' + index + '">';
-            markup += value.markup.text_label;
-            markup += '</label></div>';
-            $thisObj.$perms.append(markup);
-
-            if (index === 'datenschutzeinwilligung' && value.markup.text_body) {
-              $thisObj.$privacy.find('.container-content-dynamic').empty().append(value.markup.text_body);
-            }
+          // Skip agreements that are not configured for site.
+          if (jQuery.inArray(index, displayed_agreements) === -1) {
+            return;
           }
+
+          // For now we fake the machine name of the permission - should be delivered ba service call also.
+          var machine_name = index;
+          var version = value.version;
+          var markup = '';
+
+          // Create HTML markup.
+          markup += '<div class="checkbox">';
+          markup += '  <label for="promo_permission_' + index + '">';
+          markup += '   <input data-version="' + version + '" data-name="' + machine_name + '" type="checkbox" name="promo_permission" class="promo_permission" id="promo_permission_' + index + '">';
+          markup += value.markup.text_label;
+          markup += '  </label>';
+          markup += '  <div id="dynamic_promo_permission_' + index + '">' + value.markup.text_body + '</div>';
+          markup += '</div>';
+
+          $thisObj.$perms.append(markup);
+
+          // If body should be dynamic - hide it initially.
+          if (value.markup.text_label.indexOf('text-hidden-toggle') > 0) {
+            jQuery('#dynamic_promo_permission_' + index).toggle();
+          }
+
           // Form more-links.
           $thisObj.bindMoreLinks();
         });
