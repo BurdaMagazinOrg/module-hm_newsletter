@@ -28,7 +28,9 @@ function hm_newsletter_theme($existing, $type, $theme, $path) {
 				'confirmation_text' => '',
 				'source' => '',
 				'privacy' => '',
-				'optin' => ''
+				'optin' => '',
+				'submit_label' => '',
+				'email' => ''
 			),
 		),
 	);

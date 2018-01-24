@@ -125,7 +125,8 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 		$vars['#source'] = $blockConfig['source'];
 		$vars['#privacy'] = $blockConfig['privacy'];
 		$vars['#optin'] = $blockConfig['optin'];
-
+		$vars['#submit_label'] = $blockConfig['submit_label'];
+		$vars['#email'] = $blockConfig['email'];
 
 		// Privacy text.
 		// @FIXME privacy text seems to be unused
@@ -181,7 +182,7 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 		$form['hm_newsletter_general_settings']['source'] = [
 			'#type' => 'textfield',
 			'#title' => $this->t('Source'),
-			'#default_value' => $config['source'] ? $config['source'] : '',
+			'#default_value' => isset($config['source']) ? $config['source'] : '',
 			'#maxlength' => 512,
 			'#required' => TRUE,
 			'#description' => 'This will help to identify where the registration came from, use a meaningful descriptor. Example: "cinema_website_newsletter_sidebar"'
@@ -196,7 +197,7 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 				'required' => $this->t('required'),
 			],
 			'#description' => 'Display settings for the checkbox starting with: "Ich willige widerruflich ein, dass die hier aufgeführten Unternehmen ..."',
-			'#default_value' => $config['privacy'] ? $config['privacy'] : 'off'
+			'#default_value' => isset($config['privacy']) ? $config['privacy'] : 'off'
 		];
 
 		$form['hm_newsletter_general_settings']['optin'] = [
@@ -208,7 +209,7 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 				'required' => $this->t('required'),
 			],
 			'#description' => 'Display settings for the checkbox starting with: "Ja, ich bin damit einverstanden, dass mich Burda Direkt Services GmbH ..."',
-			'#default_value' => $config['optin'] ? $config['optin'] : 'off'
+			'#default_value' => isset($config['optin']) ? $config['optin'] : 'off'
 		];
 
 		$form['hm_newsletter_general_settings']['newsletters'] = [
@@ -251,8 +252,8 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 						'placeholder' => $this->t('Display placeholder inside the input field')
 					],
 					'#default_value' => [
-						$config[$element]['label_display']['label'] ? 'label' : '',
-						$config[$element]['label_display']['placeholder'] ? 'placeholder' : '',
+						isset($config[$element]['label_display']['label']) ? $config[$element]['label_display']['label'] : '',
+						isset($config[$element]['label_display']['placeholder']) ? $config[$element]['label_display']['placeholder'] : '',
 					],
 					'#title' => $this->t('Field label settings'),
 					'#states' => [
@@ -284,6 +285,52 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 			];
 		}
 
+		$form['hm_newsletter_fieldset']['email'] = [
+			'#type' => 'fieldset',
+			'#title' => $this->t('E-Mail'),
+			'is_visible' => [
+				'#type' => 'hidden',
+				'#default_value' => 1,
+			],
+			'label_display' => [
+				'#type' => 'checkboxes',
+				'#options' => [
+					'label' => $this->t('Display label for the field'),
+					'placeholder' => $this->t('Display placeholder inside the input field')
+				],
+				'#default_value' => [
+					isset($config['email']['label_display']['label']) ? $config['email']['label_display']['label'] : '',
+					isset($config['email']['label_display']['placeholder']) ? $config['email']['label_display']['placeholder'] : '',
+				],
+				'#title' => $this->t('Field label settings'),
+				'#states' => [
+					'visible' => [
+						':input[name="settings[hm_newsletter_fieldset][email][is_visible]"]' => ['value' => 1],
+					],
+				],
+			],
+			'label_text' => [
+				'#type' => 'textfield',
+				'#title' => $this->t('Label'),
+				'#default_value' => !empty($config['email']['label_text']) ? $config['email']['label_text'] : 'E-Mail:',
+				'#states' => [
+					'visible' => [
+						':input[name="settings[hm_newsletter_fieldset][email][label_display][label]"]' => ['checked' => TRUE],
+					],
+				],
+			],
+			'placeholder_text' => [
+				'#type' => 'textfield',
+				'#title' => $this->t('Placeholder'),
+				'#default_value' => !empty($config['email']['placeholder_text']) ? $config['email']['placeholder_text'] : '',
+				'#states' => [
+					'visible' => [
+						':input[name="settings[hm_newsletter_fieldset][email][label_display][placeholder]"]' => ['checked' => TRUE],
+					],
+				],
+			]
+		];
+
 
 		/****************************************************************
 		 *** Settings for texts
@@ -301,6 +348,7 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 			'text' => array(
 				'#type' => 'text_format',
 				'#title' => t('Text'),
+				'#format' => 'full_html',
 				'#default_value' => !empty($config['text']) ? $config['text']['value'] : '',
 				'#rows' => 8,
 				'#cols' => 128
@@ -314,6 +362,7 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 			),
 			'confirmation_text' => array(
 				'#type' => 'text_format',
+				'#format' => 'full_html',
 				'#title' => t('Confirmation text'),
 				'#default_value' => !empty($config['confirmation_text']) ? $config['confirmation_text']['value'] : '',
 				'#rows' => 8,
