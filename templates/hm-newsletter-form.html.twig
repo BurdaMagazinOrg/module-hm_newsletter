@@ -1,164 +1,165 @@
 <div class="hm-newsletter-subscribe">
     <div class="hm_newsletter">
-        {% block container_form %}
-            <form class="form-horizontal container-content-item" novalidate>
-                <input type="hidden" name="client_id" value="{{ client_id }}">
+      {% block container_form %}
+          <form class="form-horizontal container-content-item" novalidate>
+              <input type="hidden" name="client_id" value="{{ client_id }}">
+              <input type="hidden" name="source" value="{{ source }}">
 
-                {% block container_form__headline %}
-                    <span class="hm_newsletter__headline">{{ headline }}</span>
-                {% endblock %}
+            {% block container_form__headline %}
+                <span class="hm_newsletter__headline">{{ headline }}</span>
+            {% endblock %}
 
-                {% block container_form__description %}
-                    <p class="hm_newsletter__description">{{ text|plain_text|trim }}</p>
-                {% endblock %}
+            {% block container_form__description %}
+                <div class="hm_newsletter__description">{{ text|raw }}</div>
+            {% endblock %}
 
-                {% block container_form__form_groups %}
-                    <div class="hm_newsletter__newsletters form-group" {% if newsletters|length == 1 %}style="display: none;{% endif %}">
-                        {% for nl_id, nl_label in newsletters %}
-                            <div class="checkbox">
-                                <label for="{{ nl_id }}">
-                                    <span class="hm_newsletter__nl_logo nl_logo_{{ nl_id }}"></span>
-                                    <input type="checkbox" name="groups[]" id="{{ nl_id }}" value="{{ nl_id }}" {% if newsletters|length == 1 %}checked="checked"{% endif %}> {{ nl_label }}
-                                </label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <span class="hm_newsletter__headline2">Persönliche Daten</span>
-
-                    {% if title %}
-                        <div class="hm_newsletter__salutation form-group">
-                            <label class="control-label required" for="salutation">Anrede</label>
-                            <select class="form-control" name="salutation" required="required">
-                                <option value="">- Ausw&auml;hlen -</option>
-                                <option>Frau</option>
-                                <option>Herr</option>
-                            </select>
-                        </div>
-                    {% endif %}
-
-                    {% if firstname or name %}
-                        <div class="hm_newsletter__wrap2col clearfix">
-                            {% if firstname %}
-                            <div class="hm_newsletter__firstname hm_newsletter__col form-group">
-                                <label class="control-label required" for="firstname">Vorname:</label>
-                                <input type="text" class="form-control" id="firstname" name="firstname"
-                                       required="required">
-                            </div>
-                            {% endif %}
-                            {% if name %}
-                            <div class="hm_newsletter__lastname hm_newsletter__col form-group">
-                                <label class="control-label required" for="lastname">Nachname:</label>
-                                <input type="text" class="form-control" id="lastname" name="lastname"
-                                       required="required">
-                            </div>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-
-                    {% if zipcode or location %}
-                        <div class="hm_newsletter__wrap2col clearfix">
-                            {% if zipcode %}
-                            <div class="hm_newsletter__postcode hm_newsletter__col form-group">
-                                <label class="control-label" for="postalcode">Postleitzahl:</label>
-                                <input type="text" class="form-control" id="postalcode"
-                                       name="postalcode">
-                            </div>
-                            {% endif %}
-                            {% if location %}
-                            <div class="hm_newsletter__city hm_newsletter__col form-group">
-                                <label class="control-label" for="city">Ort:</label>
-                                <input type="text" class="form-control" id="city" name="city">
-                            </div>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-
-                    {% if birthdate %}
-                        <div class="hm_newsletter__dob form-group">
-                            <label class="control-label" for="dob">Geburtsdatum</label>
-                            <select name="dob_day">
-                                {% for bd, bd_label in birthday.day %}
-                                <option value="{{ bd }}">{{ bd_label }}</option>
-                                {% endfor %}
-                            </select>
-                            <select name="dob_month">
-                                {% for bm, bm_label in birthday.month %}
-                                <option value="{{ bm }}">{{ bm_label }}</option>
-                                {% endfor %}
-                            </select>
-                            <select name="dob_year">
-                                {% for by, by_label in birthday.year %}
-                                <option value="{{ by }}">{{ by_label }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    {% endif %}
-
-                    <div class="hm_newsletter__email form-group">
-                        <label class="control-label required" for="email">E-Mail:</label>
-                        <input type="email" class="form-control" id="email" name="email"
-                               required="required">
-                    </div>
-                    <span class="hm_newsletter__required_info">* Pflichtfeld</span>
-                {% endblock %}
-
-                <span class="hm_newsletter__headline2">Datenschutzabfrage</span>
-                {% block container_form__privacy %}
-                <div class="hm_newsletter__permissions form-group"></div>
-                {% endblock %}
-
-                {% block container_form__alerts %}
-                    <div class="hm_newsletter__alerts"></div>
-                {% endblock %}
-
-                <div class="hm_newsletter__submit">
-                    <button type="submit" class="btn btn-default">Jetzt anmelden</button>
+            {% block container_form__form_groups %}
+                <div class="hm_newsletter__newsletters form-group" {% if newsletters|length == 1 %}style="display: none;{% endif %}">
+                  {% for nl_id, nl_label in newsletters %}
+                      <div class="checkbox">
+                          <label for="{{ nl_id }}">
+                              <span class="hm_newsletter__nl_logo nl_logo_{{ nl_id }}"></span>
+                              <input type="checkbox" name="groups[]" id="{{ nl_id }}" value="{{ nl_id }}" {% if newsletters|length == 1 %}checked="checked"{% endif %}> {{ nl_label }}
+                          </label>
+                      </div>
+                  {% endfor %}
                 </div>
+                <span class="hm_newsletter__headline2">Persönliche Daten</span>
 
-                {% block container_form__imprint %}
-                    {% if imprint_text is not empty %}
-                    <span class="hm_newsletter__headline2">Impressum</span>
-                    <div class="hm_newsletter__imprint">
-                        {{ imprint_text }}
-                    </div>
+              {% if title.is_visible %}
+                  <div class="hm_newsletter__salutation form-group">
+                      <label class="control-label required" for="salutation">Anrede</label>
+                      <select class="form-control" name="salutation" required="required">
+                          <option value="">- Ausw&auml;hlen -</option>
+                          <option>Frau</option>
+                          <option>Herr</option>
+                      </select>
+                  </div>
+              {% endif %}
+
+              {% if firstname.is_visible or name.is_visible %}
+                  <div class="hm_newsletter__wrap2col clearfix">
+                    {% if firstname.is_visible %}
+                        <div class="hm_newsletter__firstname hm_newsletter__col form-group">
+                            <label class="control-label required" for="firstname">Vorname:</label>
+                            <input type="text" class="form-control" id="firstname" name="firstname" required="required">
+                        </div>
                     {% endif %}
-                {% endblock %}
-            </form>
-        {% endblock %}
+                    {% if name.is_visible %}
+                        <div class="hm_newsletter__lastname hm_newsletter__col form-group">
+                            <label class="control-label required" for="lastname">Nachname:</label>
+                            <input type="text" class="form-control" id="lastname" name="lastname" required="required">
+                        </div>
+                    {% endif %}
+                  </div>
+              {% endif %}
 
-        {% block container_success %}
-        <div class="hm_newsletter__success container-content-item">
-            <div class="content-wrapper">
+              {% if zipcode.is_visible or location.is_visible %}
+                  <div class="hm_newsletter__wrap2col clearfix">
+                    {% if zipcode.is_visible %}
+                        <div class="hm_newsletter__postcode hm_newsletter__col form-group">
+                            <label class="control-label" for="postalcode">Postleitzahl:</label>
+                            <input type="text" class="form-control" id="postalcode" name="postalcode">
+                        </div>
+                    {% endif %}
+                    {% if location.is_visible %}
+                        <div class="hm_newsletter__city hm_newsletter__col form-group">
+                            <label class="control-label" for="city">Ort:</label>
+                            <input type="text" class="form-control" id="city" name="city">
+                        </div>
+                    {% endif %}
+                  </div>
+              {% endif %}
+
+              {% if birthdate.is_visible %}
+                  <div class="hm_newsletter__dob form-group">
+                      <label class="control-label" for="dob">Geburtsdatum</label>
+                      <select name="dob_day">
+                        {% for bd, bd_label in birthday.day %}
+                            <option value="{{ bd }}">{{ bd_label }}</option>
+                        {% endfor %}
+                      </select>
+                      <select name="dob_month">
+                        {% for bm, bm_label in birthday.month %}
+                            <option value="{{ bm }}">{{ bm_label }}</option>
+                        {% endfor %}
+                      </select>
+                      <select name="dob_year">
+                        {% for by, by_label in birthday.year %}
+                            <option value="{{ by }}">{{ by_label }}</option>
+                        {% endfor %}
+                      </select>
+                  </div>
+              {% endif %}
+
+                <div class="hm_newsletter__email form-group">
+                    <label class="control-label required" for="email">E-Mail:</label>
+                    <input type="email" class="form-control" id="email" name="email"
+                           required="required" placeholder="E-Mail Adresse eingeben">
+                </div>
+                <span class="hm_newsletter__required_info">* Pflichtfeld</span>
+            {% endblock %}
+
+            {% if privacy or optin %}
+                <span class="hm_newsletter__headline2">Datenschutzabfrage</span>
+              {% block container_form__privacy %}
+                {% if privacy %}
+                    <div class="hm_newsletter__permissions privacy form-group"></div>
+                    <div class="hm_newsletter__privacy container-content-item promo_permission_text--hidden container-content-item">
+                        <span class="icon icon-close"></span>
+                        <div class="container-content-dynamic"></div>
+                    </div>
+                {% endif %}
+              {% endblock %}
+              {% block container_form_optin %}
+                {% if optin %}
+                    <div class="hm_newsletter__permissions optin form-group"></div>
+                {% endif %}
+              {% endblock %}
+            {% endif %}
+
+            {% block container_form__alerts %}
+                <div class="hm_newsletter__alerts"></div>
+            {% endblock %}
+
+              <div class="hm_newsletter__submit">
+                  <button type="submit" class="btn btn-default">Anmelden</button>
+              </div>
+
+            {% block container_form__imprint %}
+              {% if imprint_text is not empty %}
+                  <span class="hm_newsletter__headline2">Impressum</span>
+                  <div class="hm_newsletter__imprint">
+                    {{ imprint_text }}
+                  </div>
+              {% endif %}
+            {% endblock %}
+          </form>
+      {% endblock %}
+
+      {% block container_success %}
+          <div class="hm_newsletter__success container-content-item">
+              <div class="content-wrapper">
                 {% block container_success__headline %}
                     <div class="text-headline ">{{ confirmation_headline }}</div>
                 {% endblock %}
                 {% block container_success__confirmation_text %}
-                    {{ confirmation_text|raw }}
+                  {{ confirmation_text|raw }}
                 {% endblock %}
-            </div>
-        </div>
-        {% endblock %}
+              </div>
+          </div>
+      {% endblock %}
 
-        {% block container_privacy %}
-            <div class="hm_newsletter__privacy container-content-item promo_permission_text--hidden container-content-item">
-                <span class="icon icon-close"></span>
-
-                <div class="container-content-dynamic">
-
-                </div>
-            </div>
-        {% endblock %}
-
-        {% block container_strings %}
-            <script type="application/json" class="hm_newsletter__strings">
-                {
-                    "mail_required": "Die E-Mail-Adresse ist erforderlich.",
-                    "mail_malformed": "Die E-Mail-Adresse muss gültig sein.",
-                    "required": "Das Feld ist erforderlich.",
-                    "check_mail": "Bitte überprüfen Sie die Eingabe der E-Mail Adresse.",
-                    "promo_premissions": "Bitte bestätigen Sie die Datenschutzeinwilligung."
-                }
-            </script>
-        {% endblock %}
+      {% block container_strings %}
+          <script type="application/json" class="hm_newsletter__strings">
+              {
+                  "mail_required": "Die E-Mail-Adresse ist erforderlich.",
+                  "mail_malformed": "Die E-Mail-Adresse muss gültig sein.",
+                  "required": "Das Feld ist erforderlich.",
+                  "check_mail": "Bitte überprüfen Sie die Eingabe der E-Mail Adresse.",
+                  "promo_premissions": "Bitte bestätigen Sie die Datenschutzeinwilligung."
+              }
+          </script>
+      {% endblock %}
     </div>
 </div>

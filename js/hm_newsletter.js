@@ -27,12 +27,13 @@ Number.prototype.pad = function (size) {
     else {
       this.$wrapper = $('.hm_newsletter', context);
     }
-    this.$perms = this.$wrapper.find('.hm_newsletter__permissions');
+    this.$privacy = this.$wrapper.find('.hm_newsletter__permissions.privacy');
+    this.$optin = this.$wrapper.find('.hm_newsletter__permissions.optin');
     this.$form = this.$wrapper.find('form');
     this.$alerts = this.$wrapper.find('.hm_newsletter__alerts');
     this.$success = this.$wrapper.find('.hm_newsletter__success');
     this.$error = this.$wrapper.find('.hm_newsletter__error');
-    this.$privacy = this.$wrapper.find('.hm_newsletter__privacy');
+    this.$privacyDetails = this.$wrapper.find('.hm_newsletter__privacy');
 
     this.strings = JSON.parse(this.$wrapper.find('.hm_newsletter__strings').html());
 
@@ -64,19 +65,8 @@ Number.prototype.pad = function (size) {
   HmNewsletter.prototype.bindMoreLinks = function () {
     var $thisObj = this;
     // Open more text div.
-    $thisObj.$perms.find('.text-hidden-toggle').once().on('click', function (e) {
-      // Click should no affect label checkbox.
-      e.preventDefault();
-      if (!$(this).hasClass('visible')) {
-        $thisObj.setViewState(HmNewsletter.STATE_PRIVACY);
-      }
-      else {
-        $thisObj.setViewState(HmNewsletter.STATE_INITIAL);
-      }
-    });
-
-    $thisObj.$privacy.find('.icon-close').click(function (e) {
-      $thisObj.setViewState(HmNewsletter.STATE_INITIAL);
+    $thisObj.$privacy.find('.text-hidden-toggle').once().on('click', function (e) {
+      $($thisObj.$privacyDetails).toggle();
     });
   };
 
@@ -373,23 +363,27 @@ Number.prototype.pad = function (size) {
     window.thsixtyQ.push(['permissions.get', {
       success: function (permissions) {
         // Clean up markup in permissions wrapper.
-        $thisObj.$perms.html('');
+        $thisObj.$privacy.html('');
         // Show permissions.
         jQuery.each(permissions, function (index, value) {
-          // For now we only show the privacy checkbox.
-          if (index === 'datenschutzeinwilligung' || index === 'privacy') {
+          console.log(value);
+          if (index === 'datenschutzeinwilligung') {
             // For now we fake the machine name of the permission - should be delivered ba service call also.
-            var machine_name = index;
-            var version = value.version;
-            var markup = '<div class="checkbox"><label for="promo_permission_' + index + '">';
-            markup += '<input data-version="' + version + '" data-name="' + machine_name + '" type="checkbox" name="promo_permission" class="promo_permission" id="promo_permission_' + index + '">';
-            markup += value.markup.text_label;
-            markup += '</label></div>';
-            $thisObj.$perms.append(markup);
+            var privacyMarkup = '<div class="checkbox"><label for="promo_permission_' + index + '">';
+            privacyMarkup += '<input data-version="' + value.version + '" data-name="' + index + '" type="checkbox" name="promo_permission" class="promo_permission" id="promo_permission_' + index + '">';
+            privacyMarkup += value.markup.text_label;
+            privacyMarkup += '</label></div>';
+            $thisObj.$privacy.append(privacyMarkup);
 
-            if (index === 'datenschutzeinwilligung' && value.markup.text_body) {
-              $thisObj.$privacy.find('.container-content-dynamic').empty().append(value.markup.text_body);
+            if (value.markup.text_body) {
+              $thisObj.$privacyDetails.find('.container-content-dynamic').empty().append(value.markup.text_body);
             }
+          }
+          if (index === 'anspracheerlaubnis') {
+            var optInMarkup = '<div class="checkbox"><label for="promo_permission_' + index + '">';
+            optInMarkup += '<input data-version="' + value.version + '" data-name="' + index + '" type="checkbox" name="promo_permission" class="promo_permission" id="promo_permission_' + index + '">';
+            optInMarkup += value.markup.text_label + ' ' + value.markup.text_body + '</label></div>';
+            $thisObj.$optin.append(optInMarkup);
           }
           // Form more-links.
           $thisObj.bindMoreLinks();
