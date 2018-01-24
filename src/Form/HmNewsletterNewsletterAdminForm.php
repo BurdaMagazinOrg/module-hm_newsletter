@@ -89,12 +89,12 @@ class HmNewsletterNewsletterAdminForm extends ConfigFormBase {
       '#default_value' => $hm_newsletter_settings->get('hm_imprint_text'),
     );
 
-    $displayed_agreements = implode('|', $hm_newsletter_settings->get('hm_displayed_agreements'));
+    $displayed_agreements = $hm_newsletter_settings->get('hm_displayed_agreements');
     $form['hm_newsletter']['hm_displayed_agreements'] = array(
       '#title' => $this->t('Displayed agreement names (separated by "|")'),
       '#description' => $this->t('Agreements are used to filter what is displayed for newsletter.'),
       '#type' => 'textfield',
-      '#default_value' => $displayed_agreements,
+      '#default_value' => (empty($displayed_agreements)) ? '' : implode('|', $displayed_agreements),
     );
 
     return parent::buildForm($form, $form_state);
