@@ -366,7 +366,6 @@ Number.prototype.pad = function (size) {
         $thisObj.$privacy.html('');
         // Show permissions.
         jQuery.each(permissions, function (index, value) {
-          console.log(value);
           if (index === 'datenschutzeinwilligung') {
             // For now we fake the machine name of the permission - should be delivered ba service call also.
             var privacyMarkup = '<div class="checkbox"><label for="promo_permission_' + index + '">';
