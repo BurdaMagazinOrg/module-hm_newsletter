@@ -124,7 +124,6 @@
   color: #a94442;
 }
 
-.promo_permission_text--hidden,
 .hm_newsletter__error,
 .hm_newsletter__success,
 .hm_newsletter__promo_permission_more,
@@ -166,7 +165,6 @@
 }
 
 .hm_newsletter .form-horizontal,
-.hm_newsletter.state-privacy .hm_newsletter__privacy,
 .hm_newsletter.state-success .hm_newsletter__success {
   display: block;
 }

@@ -2,7 +2,7 @@
   "name": "burdamagazinorg/hm_newsletter",
   "type": "drupal-module",
   "description": "Harbourmaster Newsletter integration",
-  "license": "GPL-2.0+",
+  "license": "GPL-2.0-or-later",
   "minimum-stability": "dev",
   "require-dev": {
     "burdamagazinorg/thunder-dev-tools": "dev-master"

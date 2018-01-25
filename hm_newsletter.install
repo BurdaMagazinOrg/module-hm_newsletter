@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * @file
+ * Update hooks for for HM Newsletter module.
+ */
+
+/**
+ * Add new configuration options.
+ */
+function hm_newsletter_update_8001() {
+  // Set configuration to display "datenschutzeinwilligung" and "privacy", since
+  // that was previous behaviour.
+  \Drupal::configFactory()
+    ->getEditable('hm_newsletter.settings')
+    ->set('hm_displayed_agreements', ['datenschutzeinwilligung', 'privacy'])
+    ->save();
+}

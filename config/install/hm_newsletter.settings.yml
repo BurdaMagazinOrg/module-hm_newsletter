@@ -1,3 +1,6 @@
 hm_environment: 'production'
 hm_client_id: ''
 hm_imprint_text: ''
+hm_displayed_agreements:
+  - 'datenschutzeinwilligung'
+  - 'anspracheerlaubnis'

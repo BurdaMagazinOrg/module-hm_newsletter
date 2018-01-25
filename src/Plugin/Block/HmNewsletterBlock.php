@@ -81,6 +81,7 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
           'hm_newsletter' => array(
             'env' => $settings->get('hm_environment'),
             'clientid' => $settings->get('hm_client_id'),
+            'displayed_agreements' => $settings->get('hm_displayed_agreements'),
           ),
         ),
       ),
