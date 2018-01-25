@@ -407,7 +407,7 @@ Number.prototype.pad = function (size) {
    */
   Drupal.behaviors.hmNewsletter = {
     attach: function (context, settings) {
-      if ($('.hm_newsletter', context).hasClass('initialized') || $(context).is('.hm_newsletter.initialized')) {
+      if ($('.hm_newsletter', context).length === 0 || $('.hm_newsletter', context).hasClass('initialized') || $(context).is('.hm_newsletter.initialized')) {
         return;
       }
 

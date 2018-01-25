@@ -5,6 +5,11 @@
 (function ($, window, document) {
   Drupal.behaviors.thsixty = {
     attach: function (context) {
+      // Check if "thsixtyQ" is already loaded.
+      if (window.thsixtyQ) {
+        return;
+      }
+
       var config = {
         env: drupalSettings.hm_newsletter.env,
         version: 'v1'
