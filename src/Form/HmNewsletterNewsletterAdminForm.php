@@ -27,7 +27,14 @@ class HmNewsletterNewsletterAdminForm extends ConfigFormBase {
     $config = $this->config('hm_newsletter.settings');
 
     foreach (Element::children($form['hm_newsletter']) as $variable) {
-      $config->set($variable, $form_state->getValue($form['hm_newsletter'][$variable]['#parents']));
+      if ($variable === 'hm_displayed_agreements') {
+        // Split by "|" and filter empty values.
+        $displayed_agreements = array_filter(explode('|', $form_state->getValue($form['hm_newsletter'][$variable]['#parents'])));
+        $config->set($variable, $displayed_agreements);
+      }
+      else {
+        $config->set($variable, $form_state->getValue($form['hm_newsletter'][$variable]['#parents']));
+      }
     }
     $config->save();
 
@@ -80,6 +87,14 @@ class HmNewsletterNewsletterAdminForm extends ConfigFormBase {
       '#description' => $this->t('Text is displayed in the footer of the newsletter subscription form.'),
       '#type' => 'textarea',
       '#default_value' => $hm_newsletter_settings->get('hm_imprint_text'),
+    );
+
+    $displayed_agreements = $hm_newsletter_settings->get('hm_displayed_agreements');
+    $form['hm_newsletter']['hm_displayed_agreements'] = array(
+      '#title' => $this->t('Displayed agreement names (separated by "|")'),
+      '#description' => $this->t('Agreements are used to filter what is displayed for newsletter.'),
+      '#type' => 'textfield',
+      '#default_value' => (empty($displayed_agreements)) ? '' : implode('|', $displayed_agreements),
     );
 
     return parent::buildForm($form, $form_state);

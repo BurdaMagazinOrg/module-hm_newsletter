@@ -4,6 +4,7 @@ base:
     'js/thsixty.load.js': {}
     'js/hm_newsletter.js': {}
   dependencies:
+    - core/drupal
     - core/drupalSettings
     - core/jquery.once
   css:

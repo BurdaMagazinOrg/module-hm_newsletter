@@ -43,7 +43,6 @@ Number.prototype.pad = function (size) {
   // Static vars and functions.
   $.extend(HmNewsletter, {
     STATE_INITIAL: 'state-initial',
-    STATE_PRIVACY: 'state-privacy',
     STATE_SUCCESS: 'state-success',
     // TODO: Maybe save the permissions just once and reuse it.
     permissions: null,
@@ -64,9 +63,14 @@ Number.prototype.pad = function (size) {
    */
   HmNewsletter.prototype.bindMoreLinks = function () {
     var $thisObj = this;
+
     // Open more text div.
-    $thisObj.$privacy.find('.text-hidden-toggle').once().on('click', function (e) {
-      $($thisObj.$privacyDetails).toggle();
+    $thisObj.$perms.find('.text-hidden-toggle').once().on('click', function (e) {
+      // Click should no affect label checkbox.
+      e.preventDefault();
+
+      var labelFor = jQuery(this).closest('label').attr('for');
+      jQuery('#dynamic_' + labelFor).toggle();
     });
   };
 
@@ -264,13 +268,10 @@ Number.prototype.pad = function (size) {
    * @param pState
    */
   HmNewsletter.prototype.setViewState = function (pState) {
-    this.$wrapper.removeClass(HmNewsletter.STATE_PRIVACY + ' ' + HmNewsletter.STATE_SUCCESS);
+    this.$wrapper.removeClass(HmNewsletter.STATE_SUCCESS);
 
-    switch (pState) {
-      case HmNewsletter.STATE_SUCCESS:
-      case HmNewsletter.STATE_PRIVACY:
-        this.$wrapper.addClass(pState);
-        break;
+    if (pState === HmNewsletter.STATE_SUCCESS) {
+      this.$wrapper.addClass(pState);
     }
   };
 
@@ -419,7 +420,7 @@ Number.prototype.pad = function (size) {
    */
   Drupal.behaviors.hmNewsletter = {
     attach: function (context, settings) {
-      if ($('.hm_newsletter', context).hasClass('initialized') || $(context).is('.hm_newsletter.initialized')) {
+      if ($('.hm_newsletter', context).length === 0 || $('.hm_newsletter', context).hasClass('initialized') || $(context).is('.hm_newsletter.initialized')) {
         return;
       }
 
