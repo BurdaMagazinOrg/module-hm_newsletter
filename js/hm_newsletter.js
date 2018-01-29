@@ -384,7 +384,7 @@ Number.prototype.pad = function (size) {
 
             // For now we fake the machine name of the permission - should be delivered ba service call also.
             var privacyMarkup = '<div class="checkbox"><label for="promo_permission_' + index + '">';
-            privacyMarkup += '<input '+ privacyReq +' data-version="' + value.version + '" data-name="' + index + '" type="checkbox" name="promo_permission" class="promo_permission" id="promo_permission_' + index + '">';
+            privacyMarkup += '<input ' + privacyReq + ' data-version="' + value.version + '" data-name="' + index + '" type="checkbox" name="promo_permission" class="promo_permission" id="promo_permission_' + index + '">';
             privacyMarkup += value.markup.text_label;
             privacyMarkup += '</label></div>';
             $thisObj.$privacy.append(privacyMarkup);
@@ -401,7 +401,7 @@ Number.prototype.pad = function (size) {
             }
 
             var optInMarkup = '<div class="checkbox"><label for="promo_permission_' + index + '">';
-            optInMarkup += '<input '+ optInReq +' data-version="' + value.version + '" data-name="' + index + '" type="checkbox" name="promo_permission" class="promo_permission" id="promo_permission_' + index + '">';
+            optInMarkup += '<input ' + optInReq + ' data-version="' + value.version + '" data-name="' + index + '" type="checkbox" name="promo_permission" class="promo_permission" id="promo_permission_' + index + '">';
             optInMarkup += value.markup.text_label + ' ' + value.markup.text_body + '</label></div>';
             $thisObj.$optin.append(optInMarkup);
           }

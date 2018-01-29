@@ -17,7 +17,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   admin_label = @Translation("Harbourmaster newsletter subscription form"),
  * )
  */
-class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInterface
+{
 
 	/**
 	 * @var ConfigFactory $configFactory
@@ -26,6 +27,15 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 	private $formElements = [
 		'title', 'firstname', 'name', 'zipcode', 'location', 'birthdate',
 	];
+
+	/**
+	 * HmNewsletterBlock constructor.
+	 */
+	public function __construct(array $configuration, $plugin_id, $plugin_definition, $configFactory)
+	{
+		parent::__construct($configuration, $plugin_id, $plugin_definition);
+		$this->configFactory = $configFactory;
+	}
 
 	/**
 	 * Creates an instance of the plugin.
@@ -42,21 +52,14 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 	 * @return static
 	 *   Returns an instance of this plugin.
 	 */
-	public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+	public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition)
+	{
 		return new static(
 			$configuration,
 			$plugin_id,
 			$plugin_definition,
 			$container->get('config.factory')
 		);
-	}
-
-	/**
-	 * HmNewsletterBlock constructor.
-	 */
-	public function __construct(array $configuration, $plugin_id, $plugin_definition, $configFactory) {
-		parent::__construct($configuration, $plugin_id, $plugin_definition);
-		$this->configFactory = $configFactory;
 	}
 
 	/**
@@ -72,7 +75,8 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 	 *
 	 * @see \Drupal\block\BlockViewBuilder
 	 */
-	public function build() {
+	public function build()
+	{
 		$blockConfig = $this->getConfiguration();
 		/**
 		 * @var ImmutableConfig $settings
@@ -101,7 +105,8 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 		return $render;
 	}
 
-	private function preprocessBlockConfig(&$vars, $blockConfig) {
+	private function preprocessBlockConfig(&$vars, $blockConfig)
+	{
 		foreach ($this->formElements as $element) {
 			if (isset($blockConfig[$element])) {
 				$vars['#' . $element] = $blockConfig[$element];
@@ -109,7 +114,8 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 		}
 	}
 
-	private function preprocessTemplateVariables(&$vars, $settings, $blockConfig) {
+	private function preprocessTemplateVariables(&$vars, $settings, $blockConfig)
+	{
 		// Get newsletters.
 		$newsletters = explode(PHP_EOL, $blockConfig['newsletters']);
 		$newsletters_options = array();
@@ -167,7 +173,8 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 	/**
 	 * {@inheritdoc}
 	 */
-	public function blockForm($form, FormStateInterface $form_state) {
+	public function blockForm($form, FormStateInterface $form_state)
+	{
 		$config = $this->getConfiguration();
 		$form = parent::blockForm($form, $form_state);
 
@@ -259,7 +266,7 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 					'#title' => $this->t('Field label settings'),
 					'#states' => [
 						'visible' => [
-							':input[name="settings[hm_newsletter_fieldset]['.$element.'][is_visible]"]' => ['checked' => TRUE],
+							':input[name="settings[hm_newsletter_fieldset][' . $element . '][is_visible]"]' => ['checked' => TRUE],
 						],
 					],
 				],
@@ -269,7 +276,7 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 					'#default_value' => !empty($config[$element]['label_text']) ? $config[$element]['label_text'] : '',
 					'#states' => [
 						'visible' => [
-							':input[name="settings[hm_newsletter_fieldset]['.$element.'][label_display][label]"]' => ['checked' => TRUE],
+							':input[name="settings[hm_newsletter_fieldset][' . $element . '][label_display][label]"]' => ['checked' => TRUE],
 						],
 					],
 				],
@@ -279,7 +286,7 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 					'#default_value' => !empty($config[$element]['placeholder_text']) ? $config[$element]['placeholder_text'] : '',
 					'#states' => [
 						'visible' => [
-							':input[name="settings[hm_newsletter_fieldset]['.$element.'][label_display][placeholder]"]' => ['checked' => TRUE],
+							':input[name="settings[hm_newsletter_fieldset][' . $element . '][label_display][placeholder]"]' => ['checked' => TRUE],
 						],
 					],
 				]
@@ -377,7 +384,8 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
 	/**
 	 * {@inheritdoc}
 	 */
-	public function blockSubmit($form, FormStateInterface $form_state) {
+	public function blockSubmit($form, FormStateInterface $form_state)
+	{
 		parent::blockSubmit($form, $form_state);
 
 		foreach ($form_state->getValue('hm_newsletter_general_settings') as $key => $value) {

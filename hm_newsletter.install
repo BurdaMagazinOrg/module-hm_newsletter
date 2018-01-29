@@ -8,11 +8,96 @@
 /**
  * Add new configuration options.
  */
-function hm_newsletter_update_8001() {
-  // Set configuration to display "datenschutzeinwilligung" and "privacy", since
-  // that was previous behaviour.
-  \Drupal::configFactory()
-    ->getEditable('hm_newsletter.settings')
-    ->set('hm_displayed_agreements', ['datenschutzeinwilligung', 'privacy'])
-    ->save();
+function hm_newsletter_update_8001()
+{
+	// Set configuration to display "datenschutzeinwilligung" and "privacy", since
+	// that was previous behaviour.
+	\Drupal::configFactory()
+		->getEditable('hm_newsletter.settings')
+		->set('hm_displayed_agreements', ['datenschutzeinwilligung', 'privacy'])
+		->save();
+}
+
+/**
+ * Remove "hm_displayed_agreements" global config setting, update existing block configs to introduce new options.
+ */
+function hm_newsletter_update_8002()
+{
+	// read hm_displayed_agreements settings
+	$configFactory = \Drupal::configFactory();
+	$hmDisplayedAgreements = $configFactory->getEditable('hm_newsletter.settings');
+
+	// find/load all existing block instances
+	$blocks = \Drupal\block\Entity\Block::loadMultiple();
+	/**
+	 * @var \Drupal\block\Entity\Block $block
+	 */
+	foreach ($blocks as $key => $block) {
+		if ($block->getPlugin()->getBaseId() === 'hm_newsletter_block') {
+			$blockConfig = $configFactory->getEditable('block.block.' . $block->getOriginalId());
+
+			// set privacy->required, optin->optional (dependant on old global config)
+			if (in_array('privacy', $hmDisplayedAgreements->get('hm_displayed_agreements')) ||
+				in_array('datenschutzeinwilligung', $hmDisplayedAgreements->get('hm_displayed_agreements'))) {
+				$blockConfig->set('settings.privacy', 'required')->save(TRUE);
+			} elseif (in_array('anspracheerlaubnis', $hmDisplayedAgreements->get('hm_displayed_agreements')) ||
+				in_array('optin', $hmDisplayedAgreements->get('hm_displayed_agreements')) ||
+				in_array('opt-in', $hmDisplayedAgreements->get('hm_displayed_agreements'))) {
+				$blockConfig->set('settings.optin', 'optional')->save(TRUE);
+			}
+
+			// set other basic values
+			foreach ($blockConfig->get('settings') as $setting => $value) {
+				switch ($setting) {
+					case 'title':
+						$blockConfig->set('settings.' . $setting . '.label_display.label', 'label');
+						$blockConfig->set('settings.' . $setting . '.label_text', 'Anrede');
+						$blockConfig->save(TRUE);
+						break;
+					case 'firstname':
+						$blockConfig->set('settings.' . $setting . '.label_display.label', 'label');
+						$blockConfig->set('settings.' . $setting . '.label_text', 'Vorname');
+						$blockConfig->save(TRUE);
+						break;
+					case 'name':
+						$blockConfig->set('settings.' . $setting . '.label_display.label', 'label');
+						$blockConfig->set('settings.' . $setting . '.label_text', 'Nachname');
+						$blockConfig->save(TRUE);
+						break;
+					case 'zipcode':
+						$blockConfig->set('settings.' . $setting . '.label_display.label', 'label');
+						$blockConfig->set('settings.' . $setting . '.label_text', 'Postleitzahl');
+						$blockConfig->save(TRUE);
+						break;
+					case 'location':
+						$blockConfig->set('settings.' . $setting . '.label_display.label', 'label');
+						$blockConfig->set('settings.' . $setting . '.label_text', 'Land');
+						$blockConfig->save(TRUE);
+						break;
+					case 'birthdate':
+						$blockConfig->set('settings.' . $setting . '.label_display.label', 'label');
+						$blockConfig->set('settings.' . $setting . '.label_text', 'Geburtsdatum');
+						$blockConfig->save(TRUE);
+						break;
+					case 'source':
+						$blockConfig->set('settings.' . $setting, 'web'); // default value when no source is provided (looked up in elaine)
+						$blockConfig->save(TRUE);
+						break;
+					case 'submit_label':
+						$blockConfig->set('settings.' . $setting, 'Anmelden');
+						$blockConfig->save(TRUE);
+						break;
+					case 'email':
+						$blockConfig->set('settings.' . $setting . '.is_visible', '1');
+						$blockConfig->set('settings.' . $setting . '.label_display.label', 'label');
+						$blockConfig->set('settings.' . $setting . '.label_text', 'E-Mail');
+						$blockConfig->save(TRUE);
+						break;
+				}
+			}
+		}
+	}
+
+	// remove hm_displayed_agreements settings
+	$hmDisplayedAgreements->clear('hm_displayed_agreements')->save();
 }
