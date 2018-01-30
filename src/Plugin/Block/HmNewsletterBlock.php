@@ -129,11 +129,11 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
     $vars['#text'] = $blockConfig['text']['value'];
     $vars['#confirmation_headline'] = $blockConfig['confirmation_headline'];
     $vars['#confirmation_text'] = $blockConfig['confirmation_text']['value'];
-    $vars['#source'] = $blockConfig['source'];
-    $vars['#privacy'] = $blockConfig['privacy'];
-    $vars['#optin'] = $blockConfig['optin'];
-    $vars['#submit_label'] = $blockConfig['submit_label'];
-    $vars['#email'] = $blockConfig['email'];
+    $vars['#source'] = isset($blockConfig['source']) ? $blockConfig['source'] : '';
+    $vars['#privacy'] = isset($blockConfig['privacy']) ? $blockConfig['privacy'] : '';
+    $vars['#optin'] = isset($blockConfig['optin']) ? $blockConfig['optin'] : '';
+    $vars['#submit_label'] = isset($blockConfig['submit_label']) ? $blockConfig['submit_label'] : '';
+    $vars['#email'] = isset($blockConfig['email']) ? $blockConfig['email'] : '';
 
     // Privacy text.
     // @FIXME privacy text seems to be unused

@@ -52,53 +52,69 @@ function hm_newsletter_update_8002()
 
       // set other basic values
       foreach ($blockConfig->get('settings') as $setting => $value) {
+        // existing configs
         switch ($setting) {
           case 'title':
-            $blockConfig->set('settings.' . $setting . '.label_display.label', 'label');
-            $blockConfig->set('settings.' . $setting . '.label_text', 'Anrede');
-            $blockConfig->save(TRUE);
+            $isVisible = $blockConfig->get('settings.' . $setting);
+            $blockConfig->set('settings.' . $setting, [
+              'is_visible' => $isVisible,
+              'label_display' => ['label' => 'label'],
+              'label_text' => 'Anrede'
+            ]);
             break;
           case 'firstname':
-            $blockConfig->set('settings.' . $setting . '.label_display.label', 'label');
-            $blockConfig->set('settings.' . $setting . '.label_text', 'Vorname');
-            $blockConfig->save(TRUE);
+            $isVisible = $blockConfig->get('settings.' . $setting);
+            $blockConfig->set('settings.' . $setting, [
+              'is_visible' => $isVisible,
+              'label_display' => ['label' => 'label'],
+              'label_text' => 'Vorname'
+            ]);
             break;
           case 'name':
-            $blockConfig->set('settings.' . $setting . '.label_display.label', 'label');
-            $blockConfig->set('settings.' . $setting . '.label_text', 'Nachname');
-            $blockConfig->save(TRUE);
+            $isVisible = $blockConfig->get('settings.' . $setting);
+            $blockConfig->set('settings.' . $setting, [
+              'is_visible' => $isVisible,
+              'label_display' => ['label' => 'label'],
+              'label_text' => 'Nachname'
+            ]);
             break;
           case 'zipcode':
-            $blockConfig->set('settings.' . $setting . '.label_display.label', 'label');
-            $blockConfig->set('settings.' . $setting . '.label_text', 'Postleitzahl');
-            $blockConfig->save(TRUE);
+            $isVisible = $blockConfig->get('settings.' . $setting);
+            $blockConfig->set('settings.' . $setting, [
+              'is_visible' => $isVisible,
+              'label_display' => ['label' => 'label'],
+              'label_text' => 'Postleitzahl'
+            ]);
             break;
           case 'location':
-            $blockConfig->set('settings.' . $setting . '.label_display.label', 'label');
-            $blockConfig->set('settings.' . $setting . '.label_text', 'Land');
-            $blockConfig->save(TRUE);
+            $isVisible = $blockConfig->get('settings.' . $setting);
+            $blockConfig->set('settings.' . $setting, [
+              'is_visible' => $isVisible,
+              'label_display' => ['label' => 'label'],
+              'label_text' => 'Land'
+            ]);
             break;
           case 'birthdate':
-            $blockConfig->set('settings.' . $setting . '.label_display.label', 'label');
-            $blockConfig->set('settings.' . $setting . '.label_text', 'Geburtsdatum');
-            $blockConfig->save(TRUE);
-            break;
-          case 'source':
-            $blockConfig->set('settings.' . $setting, 'web'); // default value when no source is provided (looked up in elaine)
-            $blockConfig->save(TRUE);
-            break;
-          case 'submit_label':
-            $blockConfig->set('settings.' . $setting, 'Anmelden');
-            $blockConfig->save(TRUE);
-            break;
-          case 'email':
-            $blockConfig->set('settings.' . $setting . '.is_visible', '1');
-            $blockConfig->set('settings.' . $setting . '.label_display.label', 'label');
-            $blockConfig->set('settings.' . $setting . '.label_text', 'E-Mail');
-            $blockConfig->save(TRUE);
+            $isVisible = $blockConfig->get('settings.' . $setting);
+            $blockConfig->set('settings.' . $setting, [
+              'is_visible' => $isVisible,
+              'label_display' => ['label' => 'label'],
+              'label_text' => 'Geburtsdatum'
+            ]);
             break;
         }
+
+        // new configs
+        $blockConfig->set('settings.source', 'web'); // default value when no source is provided (looked up in elaine)
+        $blockConfig->set('settings.submit_label', 'Anmelden');
+        $blockConfig->set('settings.email', [
+          'is_visible' => '1',
+          'label_display' => ['label' => 'label'],
+          'label_text' => 'E-Mail'
+        ]);
       }
+
+      $blockConfig->save(TRUE);
     }
   }
 
