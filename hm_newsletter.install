@@ -25,7 +25,8 @@ function hm_newsletter_update_8002()
 {
   // read hm_displayed_agreements settings
   $configFactory = \Drupal::configFactory();
-  $hmDisplayedAgreements = $configFactory->getEditable('hm_newsletter.settings');
+  $hmNewsletterSettings = $configFactory->getEditable('hm_newsletter.settings');
+  $hmDisplayedAgreements = $hmNewsletterSettings->get('hm_displayed_agreements');
 
   // find/load all existing block instances
   $blocks = \Drupal\block\Entity\Block::loadMultiple();
@@ -36,14 +37,17 @@ function hm_newsletter_update_8002()
     if ($block->getPlugin()->getBaseId() === 'hm_newsletter_block') {
       $blockConfig = $configFactory->getEditable('block.block.' . $block->getOriginalId());
 
-      // set privacy->required, optin->optional (dependant on old global config)
-      if (in_array('privacy', $hmDisplayedAgreements->get('hm_displayed_agreements')) ||
-        in_array('datenschutzeinwilligung', $hmDisplayedAgreements->get('hm_displayed_agreements'))) {
-        $blockConfig->set('settings.privacy', 'required')->save(TRUE);
-      } elseif (in_array('anspracheerlaubnis', $hmDisplayedAgreements->get('hm_displayed_agreements')) ||
-        in_array('optin', $hmDisplayedAgreements->get('hm_displayed_agreements')) ||
-        in_array('opt-in', $hmDisplayedAgreements->get('hm_displayed_agreements'))) {
-        $blockConfig->set('settings.optin', 'optional')->save(TRUE);
+      if ($hmDisplayedAgreements) {
+        // set privacy->required, optin->optional (dependant on old global config)
+        if (in_array('privacy', $hmDisplayedAgreements) ||
+          in_array('datenschutzeinwilligung', $hmDisplayedAgreements)) {
+          $blockConfig->set('settings.privacy', 'required')->save(TRUE);
+        }
+        if (in_array('anspracheerlaubnis', $hmDisplayedAgreements) ||
+          in_array('optin', $hmDisplayedAgreements) ||
+          in_array('opt-in', $hmDisplayedAgreements)) {
+          $blockConfig->set('settings.optin', 'optional')->save(TRUE);
+        }
       }
 
       // set other basic values
@@ -99,5 +103,5 @@ function hm_newsletter_update_8002()
   }
 
   // remove hm_displayed_agreements settings
-  $hmDisplayedAgreements->clear('hm_displayed_agreements')->save();
+  $hmNewsletterSettings->clear('hm_displayed_agreements')->save();
 }
