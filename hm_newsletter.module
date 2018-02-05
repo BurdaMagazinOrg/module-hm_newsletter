@@ -8,14 +8,13 @@
 /**
  * Implements hook_theme().
  */
-function hm_newsletter_theme($existing, $type, $theme, $path)
-{
-  return array(
-    'hm_newsletter_form' => array(
-      'variables' => array(
+function hm_newsletter_theme($existing, $type, $theme, $path) {
+  return [
+    'hm_newsletter_form' => [
+      'variables' => [
         'newsletters' => NULL,
         'client_id' => '',
-        'birthday' => array(),
+        'birthday' => [],
         'imprint_text' => '',
         'title' => 1,
         'firstname' => 1,
@@ -31,8 +30,8 @@ function hm_newsletter_theme($existing, $type, $theme, $path)
         'privacy' => '',
         'optin' => '',
         'submit_label' => '',
-        'email' => ''
-      ),
-    ),
-  );
+        'email' => '',
+      ],
+    ],
+  ];
 }

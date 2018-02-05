@@ -11,22 +11,19 @@ use Drupal\Core\Render\Element;
  *
  * @package Drupal\hm_newsletter\Form
  */
-class HmNewsletterNewsletterAdminForm extends ConfigFormBase
-{
+class HmNewsletterNewsletterAdminForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId()
-  {
+  public function getFormId() {
     return 'hm_newsletter_newsletter_admin_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state)
-  {
+  public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config('hm_newsletter.settings');
 
     foreach (Element::children($form['hm_newsletter']) as $variable) {
@@ -44,16 +41,14 @@ class HmNewsletterNewsletterAdminForm extends ConfigFormBase
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames()
-  {
+  protected function getEditableConfigNames() {
     return ['hm_newsletter.settings'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state)
-  {
+  public function buildForm(array $form, FormStateInterface $form_state) {
     $hm_newsletter_settings = $this->config('hm_newsletter.settings');
     $form = [];
     $form['hm_newsletter'] = [
@@ -61,31 +56,31 @@ class HmNewsletterNewsletterAdminForm extends ConfigFormBase
       '#title' => $this->t('Harbourmaster newsletter configuration'),
     ];
 
-    $form['hm_newsletter']['hm_environment'] = array(
+    $form['hm_newsletter']['hm_environment'] = [
       '#title' => 'Environment',
-      '#description' => $this->t('Can be overwritten by settings.php via $config[\'hm_newsletter.settings\'][\'hm_environment\'] = \'production\'/\'staging\';.'),
+      '#description' => $this->t("Can be overwritten by settings.php via \$config['hm_newsletter.settings']['hm_environment'] = 'production'/'staging';."),
       '#type' => 'select',
-      '#options' => array(
+      '#options' => [
         'staging' => 'staging',
         'production' => 'production',
-      ),
+      ],
       '#default_value' => $hm_newsletter_settings->get('hm_environment'),
-    );
+    ];
 
-    $form['hm_newsletter']['hm_client_id'] = array(
+    $form['hm_newsletter']['hm_client_id'] = [
       '#title' => $this->t('Client id'),
       '#description' => $this->t('Client id will be used for agreements.'),
       '#type' => 'textfield',
       '#required' => TRUE,
       '#default_value' => $hm_newsletter_settings->get('hm_client_id'),
-    );
+    ];
 
-    $form['hm_newsletter']['hm_imprint_text'] = array(
+    $form['hm_newsletter']['hm_imprint_text'] = [
       '#title' => $this->t('Imprint text'),
       '#description' => $this->t('Text is displayed in the footer of the newsletter subscription form.'),
       '#type' => 'textarea',
       '#default_value' => $hm_newsletter_settings->get('hm_imprint_text'),
-    );
+    ];
 
     return parent::buildForm($form, $form_state);
   }

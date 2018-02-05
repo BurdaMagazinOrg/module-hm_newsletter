@@ -5,11 +5,12 @@
  * Update hooks for for HM Newsletter module.
  */
 
+use Drupal\block\Entity\Block;
+
 /**
  * Add new configuration options.
  */
-function hm_newsletter_update_8001()
-{
+function hm_newsletter_update_8001() {
   // Set configuration to display "datenschutzeinwilligung" and "privacy", since
   // that was previous behaviour.
   \Drupal::configFactory()
@@ -19,30 +20,31 @@ function hm_newsletter_update_8001()
 }
 
 /**
- * Remove "hm_displayed_agreements" global config setting, update existing block configs to introduce new options.
+ * Remove "hm_displayed_agreements" global config setting.
+ *
+ * Update existing block configs to introduce new options.
  */
-function hm_newsletter_update_8002()
-{
-  // read hm_displayed_agreements settings
+function hm_newsletter_update_8002() {
+  // Read hm_displayed_agreements settings.
   $configFactory = \Drupal::configFactory();
   $hmNewsletterSettings = $configFactory->getEditable('hm_newsletter.settings');
   $hmDisplayedAgreements = $hmNewsletterSettings->get('hm_displayed_agreements');
 
-  // find/load all existing block instances
-  $blocks = \Drupal\block\Entity\Block::loadMultiple();
-  /**
-   * @var \Drupal\block\Entity\Block $block
-   */
-  foreach ($blocks as $key => $block) {
+  // Find/load all existing block instances.
+  $blocks = Block::loadMultiple();
+
+  /* @var \Drupal\block\Entity\Block $block */
+  foreach ($blocks as $block) {
     if ($block->getPlugin()->getBaseId() === 'hm_newsletter_block') {
       $blockConfig = $configFactory->getEditable('block.block.' . $block->getOriginalId());
 
       if ($hmDisplayedAgreements) {
-        // set privacy->required, optin->optional (dependant on old global config)
+        // Set privacy->required, optin->optional (dependant on global config).
         if (in_array('privacy', $hmDisplayedAgreements) ||
           in_array('datenschutzeinwilligung', $hmDisplayedAgreements)) {
           $blockConfig->set('settings.privacy', 'required')->save(TRUE);
         }
+
         if (in_array('anspracheerlaubnis', $hmDisplayedAgreements) ||
           in_array('optin', $hmDisplayedAgreements) ||
           in_array('opt-in', $hmDisplayedAgreements)) {
@@ -50,74 +52,79 @@ function hm_newsletter_update_8002()
         }
       }
 
-      // set other basic values
+      // Set other basic values.
       foreach ($blockConfig->get('settings') as $setting => $value) {
-        // existing configs
+        // Existing configs.
         switch ($setting) {
           case 'title':
             $isVisible = $blockConfig->get('settings.' . $setting);
             $blockConfig->set('settings.' . $setting, [
               'is_visible' => $isVisible,
               'label_display' => ['label' => 'label'],
-              'label_text' => 'Anrede'
+              'label_text' => 'Anrede',
             ]);
             break;
+
           case 'firstname':
             $isVisible = $blockConfig->get('settings.' . $setting);
             $blockConfig->set('settings.' . $setting, [
               'is_visible' => $isVisible,
               'label_display' => ['label' => 'label'],
-              'label_text' => 'Vorname'
+              'label_text' => 'Vorname',
             ]);
             break;
+
           case 'name':
             $isVisible = $blockConfig->get('settings.' . $setting);
             $blockConfig->set('settings.' . $setting, [
               'is_visible' => $isVisible,
               'label_display' => ['label' => 'label'],
-              'label_text' => 'Nachname'
+              'label_text' => 'Nachname',
             ]);
             break;
+
           case 'zipcode':
             $isVisible = $blockConfig->get('settings.' . $setting);
             $blockConfig->set('settings.' . $setting, [
               'is_visible' => $isVisible,
               'label_display' => ['label' => 'label'],
-              'label_text' => 'Postleitzahl'
+              'label_text' => 'Postleitzahl',
             ]);
             break;
+
           case 'location':
             $isVisible = $blockConfig->get('settings.' . $setting);
             $blockConfig->set('settings.' . $setting, [
               'is_visible' => $isVisible,
               'label_display' => ['label' => 'label'],
-              'label_text' => 'Land'
+              'label_text' => 'Land',
             ]);
             break;
+
           case 'birthdate':
             $isVisible = $blockConfig->get('settings.' . $setting);
             $blockConfig->set('settings.' . $setting, [
               'is_visible' => $isVisible,
               'label_display' => ['label' => 'label'],
-              'label_text' => 'Geburtsdatum'
+              'label_text' => 'Geburtsdatum',
             ]);
             break;
         }
-
-        // new configs
-        $blockConfig->set('settings.source', 'web'); // default value when no source is provided (looked up in elaine)
-        $blockConfig->set('settings.submit_label', 'Anmelden');
-        $blockConfig->set('settings.email', [
-          'is_visible' => '1',
-          'label_display' => ['label' => 'label'],
-          'label_text' => 'E-Mail'
-        ]);
       }
+
+      // New configs - default value when no source is provided.
+      $blockConfig->set('settings.source', 'web');
+      $blockConfig->set('settings.submit_label', 'Anmelden');
+      $blockConfig->set('settings.email', [
+        'is_visible' => '1',
+        'label_display' => ['label' => 'label'],
+        'label_text' => 'E-Mail',
+      ]);
 
       $blockConfig->save(TRUE);
     }
   }
 
-  // remove hm_displayed_agreements settings
+  // Remove hm_displayed_agreements settings.
   $hmNewsletterSettings->clear('hm_displayed_agreements')->save();
 }
