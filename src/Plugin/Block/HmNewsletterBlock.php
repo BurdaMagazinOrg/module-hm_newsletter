@@ -32,7 +32,7 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
    * @var array
    */
   private $formElements = [
-    'title',
+    'salutation',
     'firstname',
     'name',
     'zipcode',
@@ -110,7 +110,6 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
           'hm_newsletter' => [
             'env' => $settings->get('hm_environment'),
             'clientid' => $settings->get('hm_client_id'),
-            'displayed_agreements' => $settings->get('hm_displayed_agreements'),
           ],
         ],
       ],

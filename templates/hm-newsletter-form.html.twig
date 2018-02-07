@@ -26,9 +26,10 @@
           </div>
           <span class="hm_newsletter__headline2">Persönliche Daten</span>
 
-          {% if title.is_visible %}
+          {# Salutation is sent as title to newsletter endpoint. Property "salutation" is used since Drupal has reserved name "title" #}
+          {% if salutation.is_visible %}
             <div class="hm_newsletter__salutation form-group">
-              {% if title.label_display.label %}<label class="control-label required" for="salutation">{% if title.label_text %}{{ title.label_text }}{% else %}Anrede{% endif %}:</label>{% endif %}
+              {% if salutation.label_display.label %}<label class="control-label required" for="salutation">{% if salutation.label_text %}{{ salutation.label_text }}{% else %}Anrede{% endif %}:</label>{% endif %}
               <select class="form-control" name="salutation" required="required">
                 <option value="">- Ausw&auml;hlen -</option>
                 <option>Frau</option>
@@ -58,8 +59,8 @@
             <div class="hm_newsletter__wrap2col clearfix">
               {% if zipcode.is_visible %}
                 <div class="hm_newsletter__postcode hm_newsletter__col form-group">
-                  {% if zipcode.label_display.label %}<label class="control-label" for="postalcode">{% if zipcode.label_text %}{{ zipcode.label_text }}{% else %}Postleitzahl{% endif %}:</label>{% endif %}
-                  <input type="text" class="form-control" id="postalcode" name="postalcode" {% if zipcode.label_display.placeholder %}placeholder="{{ zipcode.placeholder_text }}"{% endif %}>
+                  {% if zipcode.label_display.label %}<label class="control-label" for="zip_code">{% if zipcode.label_text %}{{ zipcode.label_text }}{% else %}Postleitzahl{% endif %}:</label>{% endif %}
+                  <input type="text" class="form-control" id="zip_code" name="zip_code" {% if zipcode.label_display.placeholder %}placeholder="{{ zipcode.placeholder_text }}"{% endif %}>
                 </div>
               {% endif %}
               {% if location.is_visible %}

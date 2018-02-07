@@ -51,7 +51,7 @@ Number.prototype.pad = function (size) {
       salutation: null,
       firstname: null,
       lastname: null,
-      postalcode: null,
+      zip_code: null,
       city: null,
       dateofbirth: null,
       email: null
@@ -65,12 +65,11 @@ Number.prototype.pad = function (size) {
     var $thisObj = this;
 
     // Open more text div.
-    $thisObj.$perms.find('.text-hidden-toggle').once().on('click', function (e) {
+    $thisObj.$privacy.find('.text-hidden-toggle').once().on('click', function (e) {
       // Click should no affect label checkbox.
       e.preventDefault();
 
-      var labelFor = jQuery(this).closest('label').attr('for');
-      jQuery('#dynamic_' + labelFor).toggle();
+      $thisObj.$privacyDetails.toggle();
     });
   };
 

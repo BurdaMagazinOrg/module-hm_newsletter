@@ -33,6 +33,15 @@ function hm_newsletter_update_8002() {
   // Find/load all existing block instances.
   $blocks = Block::loadMultiple();
 
+  // Mapping for labels.
+  $labelMappings = [
+    'firstname' => 'Vorname',
+    'name' => 'Nachname',
+    'zipcode' => 'Postleitzahl',
+    'location' => 'Land',
+    'birthdate' => 'Geburtsdatum',
+  ];
+
   /* @var \Drupal\block\Entity\Block $block */
   foreach ($blocks as $block) {
     if ($block->getPlugin()->getBaseId() === 'hm_newsletter_block') {
@@ -57,56 +66,26 @@ function hm_newsletter_update_8002() {
         // Existing configs.
         switch ($setting) {
           case 'title':
+            // In case of title, migrate setting to "salutation".
             $isVisible = $blockConfig->get('settings.' . $setting);
-            $blockConfig->set('settings.' . $setting, [
+            $blockConfig->set('settings.salutation', [
               'is_visible' => $isVisible,
               'label_display' => ['label' => 'label'],
               'label_text' => 'Anrede',
             ]);
+            $blockConfig->clear('settings.' . $setting);
             break;
 
           case 'firstname':
-            $isVisible = $blockConfig->get('settings.' . $setting);
-            $blockConfig->set('settings.' . $setting, [
-              'is_visible' => $isVisible,
-              'label_display' => ['label' => 'label'],
-              'label_text' => 'Vorname',
-            ]);
-            break;
-
           case 'name':
-            $isVisible = $blockConfig->get('settings.' . $setting);
-            $blockConfig->set('settings.' . $setting, [
-              'is_visible' => $isVisible,
-              'label_display' => ['label' => 'label'],
-              'label_text' => 'Nachname',
-            ]);
-            break;
-
           case 'zipcode':
-            $isVisible = $blockConfig->get('settings.' . $setting);
-            $blockConfig->set('settings.' . $setting, [
-              'is_visible' => $isVisible,
-              'label_display' => ['label' => 'label'],
-              'label_text' => 'Postleitzahl',
-            ]);
-            break;
-
           case 'location':
-            $isVisible = $blockConfig->get('settings.' . $setting);
-            $blockConfig->set('settings.' . $setting, [
-              'is_visible' => $isVisible,
-              'label_display' => ['label' => 'label'],
-              'label_text' => 'Land',
-            ]);
-            break;
-
           case 'birthdate':
             $isVisible = $blockConfig->get('settings.' . $setting);
             $blockConfig->set('settings.' . $setting, [
               'is_visible' => $isVisible,
               'label_display' => ['label' => 'label'],
-              'label_text' => 'Geburtsdatum',
+              'label_text' => $labelMappings[$setting],
             ]);
             break;
         }
