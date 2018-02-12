@@ -27,11 +27,13 @@ Number.prototype.pad = function (size) {
     else {
       this.$wrapper = $('.hm_newsletter', context);
     }
-    this.$perms = this.$wrapper.find('.hm_newsletter__permissions');
+    this.$privacy = this.$wrapper.find('.hm_newsletter__permissions.privacy');
+    this.$optin = this.$wrapper.find('.hm_newsletter__permissions.optin');
     this.$form = this.$wrapper.find('form');
     this.$alerts = this.$wrapper.find('.hm_newsletter__alerts');
     this.$success = this.$wrapper.find('.hm_newsletter__success');
     this.$error = this.$wrapper.find('.hm_newsletter__error');
+    this.$privacyDetails = this.$wrapper.find('.hm_newsletter__privacy');
 
     this.strings = JSON.parse(this.$wrapper.find('.hm_newsletter__strings').html());
 
@@ -49,7 +51,7 @@ Number.prototype.pad = function (size) {
       salutation: null,
       firstname: null,
       lastname: null,
-      postalcode: null,
+      zip_code: null,
       city: null,
       dateofbirth: null,
       email: null
@@ -63,12 +65,11 @@ Number.prototype.pad = function (size) {
     var $thisObj = this;
 
     // Open more text div.
-    $thisObj.$perms.find('.text-hidden-toggle').once().on('click', function (e) {
+    $thisObj.$privacy.find('.text-hidden-toggle').once().on('click', function (e) {
       // Click should no affect label checkbox.
       e.preventDefault();
 
-      var labelFor = jQuery(this).closest('label').attr('for');
-      jQuery('#dynamic_' + labelFor).toggle();
+      $thisObj.$privacyDetails.toggle();
     });
   };
 
@@ -153,7 +154,10 @@ Number.prototype.pad = function (size) {
       // Agreements.
       var $promo_permissions = $thisObj.$form.find('[name="promo_permission"]');
       jQuery.each($promo_permissions, function (index, elem) {
-        if ($(elem).is(':checked') === true) {
+        if ($(elem).prop('required') && $(elem).is(':checked') === false) {
+          $thisObj.addAlert('danger', $(elem).attr('id'), $thisObj.strings[$(elem).data('name')]);
+          valid = false;
+        } else {
           var agreement = {
             version: $(elem).data('version'),
             name: $(elem).data('name')
@@ -163,9 +167,7 @@ Number.prototype.pad = function (size) {
       });
 
       // We only send request if groups or agreements are passed.
-      if (valid && agreements.length === 0 && client_groups.length === 0) {
-        $thisObj.addAlert('danger', 'promo_permission',
-          $thisObj.strings['promo_permissions']);
+      if (valid && client_groups.length === 0) {
         valid = false;
       }
 
@@ -175,6 +177,7 @@ Number.prototype.pad = function (size) {
         var data = {};
         // Send request for every client and it's subscribed groups.
         client_groups.forEach(function (value, index, arr) {
+          data.origin = $thisObj.$form.find('[name="source"]').val();
           data.client = index;
           data.groups = value;
           data.user = user;
@@ -186,6 +189,7 @@ Number.prototype.pad = function (size) {
       // Send subscribe request for agreements..
       if (valid && agreements.length) {
         var data = {};
+        data.origin = $thisObj.$form.find('[name="source"]').val();
         data.client = parseInt(client_id);
         data.groups = [];
         data.user = user;
@@ -278,7 +282,12 @@ Number.prototype.pad = function (size) {
    * @returns {*}
    */
   HmNewsletter.prototype.formField = function (field) {
-    return this.$form.find('[name="' + field + '"]');
+    // support id besides name
+    if (this.$form.find('[name="' + field + '"]').length === 0) {
+      return this.$form.find('#' + field)
+    } else {
+      return this.$form.find('[name="' + field + '"]');
+    }
   };
 
   /**
@@ -361,37 +370,40 @@ Number.prototype.pad = function (size) {
     var $thisObj = this;
     window.thsixtyQ.push(['permissions.get', {
       success: function (permissions) {
-        var displayed_agreements = drupalSettings.hm_newsletter.displayed_agreements || [];
         // Clean up markup in permissions wrapper.
-        $thisObj.$perms.html('');
+        $thisObj.$privacy.html('');
         // Show permissions.
         jQuery.each(permissions, function (index, value) {
-          // Skip agreements that are not configured for site.
-          if (jQuery.inArray(index, displayed_agreements) === -1) {
-            return;
+          if (index === 'datenschutzeinwilligung') {
+            // check if required
+            var privacyReq = '';
+            if ($thisObj.$privacy.data('required') === true) {
+              privacyReq = 'required';
+            }
+
+            // For now we fake the machine name of the permission - should be delivered ba service call also.
+            var privacyMarkup = '<div class="checkbox"><label for="promo_permission_' + index + '">';
+            privacyMarkup += '<input ' + privacyReq + ' data-version="' + value.version + '" data-name="' + index + '" type="checkbox" name="promo_permission" class="promo_permission" id="promo_permission_' + index + '">';
+            privacyMarkup += value.markup.text_label;
+            privacyMarkup += '</label></div>';
+            $thisObj.$privacy.append(privacyMarkup);
+
+            if (value.markup.text_body) {
+              $thisObj.$privacyDetails.find('.container-content-dynamic').empty().append(value.markup.text_body);
+            }
           }
+          if (index === 'anspracheerlaubnis') {
+            // check if required
+            var optInReq = '';
+            if ($thisObj.$optin.data('required') === true) {
+              optInReq = 'required';
+            }
 
-          // For now we fake the machine name of the permission - should be delivered ba service call also.
-          var machine_name = index;
-          var version = value.version;
-          var markup = '';
-
-          // Create HTML markup.
-          markup += '<div class="checkbox">';
-          markup += '  <label for="promo_permission_' + index + '">';
-          markup += '   <input data-version="' + version + '" data-name="' + machine_name + '" type="checkbox" name="promo_permission" class="promo_permission" id="promo_permission_' + index + '">';
-          markup += value.markup.text_label;
-          markup += '  </label>';
-          markup += '  <div id="dynamic_promo_permission_' + index + '">' + value.markup.text_body + '</div>';
-          markup += '</div>';
-
-          $thisObj.$perms.append(markup);
-
-          // If body should be dynamic - hide it initially.
-          if (value.markup.text_label.indexOf('text-hidden-toggle') > 0) {
-            jQuery('#dynamic_promo_permission_' + index).toggle();
+            var optInMarkup = '<div class="checkbox"><label for="promo_permission_' + index + '">';
+            optInMarkup += '<input ' + optInReq + ' data-version="' + value.version + '" data-name="' + index + '" type="checkbox" name="promo_permission" class="promo_permission" id="promo_permission_' + index + '">';
+            optInMarkup += value.markup.text_label + ' ' + value.markup.text_body + '</label></div>';
+            $thisObj.$optin.append(optInMarkup);
           }
-
           // Form more-links.
           $thisObj.bindMoreLinks();
         });

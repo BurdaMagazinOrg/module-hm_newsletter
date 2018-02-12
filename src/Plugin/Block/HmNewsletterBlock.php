@@ -3,6 +3,8 @@
 namespace Drupal\hm_newsletter\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -17,10 +19,43 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
+  /**
+   * Config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactory
+   */
   protected $configFactory;
+
+  /**
+   * Form elements.
+   *
+   * @var array
+   */
   private $formElements = [
-    'title', 'firstname', 'name', 'zipcode', 'location', 'birthdate',
+    'salutation',
+    'firstname',
+    'name',
+    'zipcode',
+    'location',
+    'birthdate',
   ];
+
+  /**
+   * HmNewsletterBlock constructor.
+   *
+   * @param array $configuration
+   *   Configuration.
+   * @param string $plugin_id
+   *   Plugin ID.
+   * @param mixed $plugin_definition
+   *   Plugin configuration.
+   * @param \Drupal\Core\Config\ConfigFactory $configFactory
+   *   Config factory service.
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactory $configFactory) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->configFactory = $configFactory;
+  }
 
   /**
    * Creates an instance of the plugin.
@@ -47,14 +82,6 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
   }
 
   /**
-   * HmNewsletterBlock constructor.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, $configFactory) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->configFactory = $configFactory;
-  }
-
-  /**
    * Builds and returns the renderable array for this block plugin.
    *
    * If a block should not be rendered because it has no content, then this
@@ -69,22 +96,23 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
    */
   public function build() {
     $blockConfig = $this->getConfiguration();
+
+    /* @var \Drupal\Core\Config\ImmutableConfig $settings */
     $settings = $this->configFactory->get('hm_newsletter.settings');
 
     $render = [
       '#theme' => 'hm_newsletter_form',
-      '#attached' => array(
-        'library' => array(
+      '#attached' => [
+        'library' => [
           'hm_newsletter/base',
-        ),
-        'drupalSettings' => array(
-          'hm_newsletter' => array(
+        ],
+        'drupalSettings' => [
+          'hm_newsletter' => [
             'env' => $settings->get('hm_environment'),
             'clientid' => $settings->get('hm_client_id'),
-            'displayed_agreements' => $settings->get('hm_displayed_agreements'),
-          ),
-        ),
-      ),
+          ],
+        ],
+      ],
     ];
 
     $this->preprocessBlockConfig($render, $blockConfig);
@@ -93,7 +121,15 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
     return $render;
   }
 
-  private function preprocessBlockConfig(&$vars, $blockConfig) {
+  /**
+   * Pre-processing of block configuration.
+   *
+   * @param array $vars
+   *   Variables.
+   * @param array $blockConfig
+   *   Block configuration.
+   */
+  private function preprocessBlockConfig(array &$vars, array $blockConfig) {
     foreach ($this->formElements as $element) {
       if (isset($blockConfig[$element])) {
         $vars['#' . $element] = $blockConfig[$element];
@@ -101,11 +137,20 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
     }
   }
 
-  private function preprocessTemplateVariables(&$vars, $settings, $blockConfig) {
-
+  /**
+   * Pre-processing of template.
+   *
+   * @param array $vars
+   *   Variable for block template.
+   * @param \Drupal\Core\Config\ImmutableConfig $settings
+   *   Global settings for module.
+   * @param array $blockConfig
+   *   Block configuration.
+   */
+  private function preprocessTemplateVariables(array &$vars, ImmutableConfig $settings, array $blockConfig) {
     // Get newsletters.
     $newsletters = explode(PHP_EOL, $blockConfig['newsletters']);
-    $newsletters_options = array();
+    $newsletters_options = [];
     foreach ($newsletters as $newsletter) {
       $newsletter = explode('|', $newsletter);
       $newsletters_options[$newsletter[0]] = $newsletter[1];
@@ -116,14 +161,11 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
     $vars['#text'] = $blockConfig['text']['value'];
     $vars['#confirmation_headline'] = $blockConfig['confirmation_headline'];
     $vars['#confirmation_text'] = $blockConfig['confirmation_text']['value'];
-
-    // Privacy text.
-    // @FIXME privacy text seems to be unused
-    $hm_link_privacy = $settings->get('hm_link_privacy');
-    if (!empty($hm_link_privacy)) {
-//      $link = Link::fromTextAndUrl('AGB/Datenschutzbestimmungen', $hm_link_privacy);
-//      $vars['#privacy_text'] = 'Ich stimme den ' . $link->toString() .' zu';
-    }
+    $vars['#source'] = isset($blockConfig['source']) ? $blockConfig['source'] : '';
+    $vars['#privacy'] = isset($blockConfig['privacy']) ? $blockConfig['privacy'] : '';
+    $vars['#optin'] = isset($blockConfig['optin']) ? $blockConfig['optin'] : '';
+    $vars['#submit_label'] = isset($blockConfig['submit_label']) ? $blockConfig['submit_label'] : '';
+    $vars['#email'] = isset($blockConfig['email']) ? $blockConfig['email'] : '';
 
     // Client id.
     $vars['#client_id'] = $settings->get('hm_client_id');
@@ -132,7 +174,7 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
     $vars['#imprint_text'] = $settings->get('hm_imprint_text');
 
     // Birthday values.
-    $birthday = array();
+    $birthday = [];
     // Days.
     $birthday['day'][] = '';
     foreach (range(1, 31) as $number) {
@@ -159,66 +201,201 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
     $config = $this->getConfiguration();
     $form = parent::blockForm($form, $form_state);
 
+    /****************************************************************
+     *** General Settings for registration
+     ****************************************************************/
+    $form['hm_newsletter_general_settings'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('General settings'),
+    ];
+
+    $form['hm_newsletter_general_settings']['source'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Source'),
+      '#default_value' => isset($config['source']) ? $config['source'] : '',
+      '#maxlength' => 512,
+      '#required' => TRUE,
+      '#description' => $this->t('This will help to identify where the registration came from, use a meaningful descriptor. Example: "cinema_website_newsletter_sidebar"'),
+    ];
+
+    $form['hm_newsletter_general_settings']['privacy'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Privacy settings'),
+      '#options' => [
+        'off' => $this->t('off'),
+        'optional' => $this->t('optional'),
+        'required' => $this->t('required'),
+      ],
+      '#description' => $this->t('Display settings for the checkbox starting with: "Ich willige widerruflich ein, dass die hier aufgeführten Unternehmen ..."'),
+      '#default_value' => isset($config['privacy']) ? $config['privacy'] : 'off',
+    ];
+
+    $form['hm_newsletter_general_settings']['optin'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Opt-In settings'),
+      '#options' => [
+        'off' => $this->t('off'),
+        'optional' => $this->t('optional'),
+        'required' => $this->t('required'),
+      ],
+      '#description' => $this->t('Display settings for the checkbox starting with: "Ja, ich bin damit einverstanden, dass mich Burda Direkt Services GmbH ..."'),
+      '#default_value' => isset($config['optin']) ? $config['optin'] : 'off',
+    ];
+
+    $form['hm_newsletter_general_settings']['newsletters'] = [
+      '#title' => $this->t('Newsletters'),
+      '#description' => $this->t('Enter one value per line, in the format key|label.
+	The key consists of CLIENTID_NEWSLETTERID, and is used by the thsixty api. The label will be used in displayed values and edit forms.'),
+      '#type' => 'textarea',
+      '#default_value' => !empty($config['newsletters']) ? $config['newsletters'] : '',
+      '#required' => TRUE,
+    ];
+
+    $form['hm_newsletter_general_settings']['submit_label'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Submit button text'),
+      '#default_value' => !empty($config['submit_label']) ? $config['submit_label'] : 'Anmelden',
+    ];
+
+    /****************************************************************
+     *** Settings for visible fields and their labels/placeholders
+     ****************************************************************/
     $form['hm_newsletter_fieldset'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Anzuzeigende Elemente'),
+      '#title' => $this->t('Visible fields'),
     ];
 
     foreach ($this->formElements as $element) {
       $form['hm_newsletter_fieldset'][$element] = [
-        '#type' => 'checkbox',
+        '#type' => 'fieldset',
         '#title' => ucfirst($element),
-//      '#title_display' => 'before',
-        '#default_value' => (isset($config[$element])) ? $config[$element] : 1,
+        'is_visible' => [
+          '#type' => 'checkbox',
+          '#title' => $this->t('display'),
+          '#default_value' => (isset($config[$element]['is_visible'])) ? $config[$element]['is_visible'] : 1,
+        ],
+        'label_display' => [
+          '#type' => 'checkboxes',
+          '#options' => [
+            'label' => $this->t('Display label for the field'),
+            'placeholder' => $this->t('Display placeholder inside the input field'),
+          ],
+          '#default_value' => [
+            isset($config[$element]['label_display']['label']) ? $config[$element]['label_display']['label'] : '',
+            isset($config[$element]['label_display']['placeholder']) ? $config[$element]['label_display']['placeholder'] : '',
+          ],
+          '#title' => $this->t('Field label settings'),
+          '#states' => [
+            'visible' => [
+              ':input[name="settings[hm_newsletter_fieldset][' . $element . '][is_visible]"]' => ['checked' => TRUE],
+            ],
+          ],
+        ],
+        'label_text' => [
+          '#type' => 'textfield',
+          '#title' => $this->t('Label'),
+          '#default_value' => !empty($config[$element]['label_text']) ? $config[$element]['label_text'] : '',
+          '#states' => [
+            'visible' => [
+              ':input[name="settings[hm_newsletter_fieldset][' . $element . '][label_display][label]"]' => ['checked' => TRUE],
+            ],
+          ],
+        ],
+        'placeholder_text' => [
+          '#type' => 'textfield',
+          '#title' => $this->t('Placeholder'),
+          '#default_value' => !empty($config[$element]['placeholder_text']) ? $config[$element]['placeholder_text'] : '',
+          '#states' => [
+            'visible' => [
+              ':input[name="settings[hm_newsletter_fieldset][' . $element . '][label_display][placeholder]"]' => ['checked' => TRUE],
+            ],
+          ],
+        ],
       ];
     }
 
-    $form['hm_newsletter_fieldset_newsletters'] = [
+    $form['hm_newsletter_fieldset']['email'] = [
       '#type' => 'fieldset',
-      '#title' => t('Newsletters'),
-      'newsletters' => array(
-        '#title' => $this->t('Newsletters'),
-        '#description' => $this->t('Enter one value per line, in the format key|label.
-     The key consists of CLIENTID_NEWSLETTERID, and is used by the thsixty api. The label will be used in displayed values and edit forms.'),
-        '#type' => 'textarea',
-        '#default_value' => !empty($config['newsletters']) ? $config['newsletters'] : '',
-        '#required' => TRUE,
-      ),
+      '#title' => $this->t('E-Mail'),
+      'is_visible' => [
+        '#type' => 'hidden',
+        '#default_value' => 1,
+      ],
+      'label_display' => [
+        '#type' => 'checkboxes',
+        '#options' => [
+          'label' => $this->t('Display label for the field'),
+          'placeholder' => $this->t('Display placeholder inside the input field'),
+        ],
+        '#default_value' => [
+          isset($config['email']['label_display']['label']) ? $config['email']['label_display']['label'] : '',
+          isset($config['email']['label_display']['placeholder']) ? $config['email']['label_display']['placeholder'] : '',
+        ],
+        '#title' => $this->t('Field label settings'),
+        '#states' => [
+          'visible' => [
+            ':input[name="settings[hm_newsletter_fieldset][email][is_visible]"]' => ['value' => 1],
+          ],
+        ],
+      ],
+      'label_text' => [
+        '#type' => 'textfield',
+        '#title' => $this->t('Label'),
+        '#default_value' => !empty($config['email']['label_text']) ? $config['email']['label_text'] : 'E-Mail:',
+        '#states' => [
+          'visible' => [
+            ':input[name="settings[hm_newsletter_fieldset][email][label_display][label]"]' => ['checked' => TRUE],
+          ],
+        ],
+      ],
+      'placeholder_text' => [
+        '#type' => 'textfield',
+        '#title' => $this->t('Placeholder'),
+        '#default_value' => !empty($config['email']['placeholder_text']) ? $config['email']['placeholder_text'] : '',
+        '#states' => [
+          'visible' => [
+            ':input[name="settings[hm_newsletter_fieldset][email][label_display][placeholder]"]' => ['checked' => TRUE],
+          ],
+        ],
+      ],
     ];
 
+    /****************************************************************
+     *** Settings for texts
+     ****************************************************************/
     $form['hm_newsletter_fieldset_content'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Inhalt'),
-      'headline' => array(
+      'headline' => [
         '#type' => 'textfield',
-        '#title' => t('Headline'),
+        '#title' => $this->t('Headline'),
         '#default_value' => !empty($config['headline']) ? $config['headline'] : '',
         '#size' => 256,
         '#maxlength' => 512,
-        '#required' => TRUE,
-      ),
-      'text' => array(
+      ],
+      'text' => [
         '#type' => 'text_format',
-        '#title' => t('Text'),
+        '#title' => $this->t('Text'),
+        '#format' => 'full_html',
         '#default_value' => !empty($config['text']) ? $config['text']['value'] : '',
         '#rows' => 8,
         '#cols' => 128,
-      ),
-      'confirmation_headline' => array(
+      ],
+      'confirmation_headline' => [
         '#type' => 'textfield',
-        '#title' => t('Confirmation headline'),
+        '#title' => $this->t('Confirmation headline'),
         '#default_value' => !empty($config['confirmation_headline']) ? $config['confirmation_headline'] : '',
         '#size' => 256,
         '#maxlength' => 512,
-        '#required' => TRUE,
-      ),
-      'confirmation_text' => array(
+      ],
+      'confirmation_text' => [
         '#type' => 'text_format',
-        '#title' => t('Confirmation text'),
+        '#format' => 'full_html',
+        '#title' => $this->t('Confirmation text'),
         '#default_value' => !empty($config['confirmation_text']) ? $config['confirmation_text']['value'] : '',
         '#rows' => 8,
         '#cols' => 128,
-      ),
+      ],
     ];
 
     return $form;
@@ -230,10 +407,10 @@ class HmNewsletterBlock extends BlockBase implements ContainerFactoryPluginInter
   public function blockSubmit($form, FormStateInterface $form_state) {
     parent::blockSubmit($form, $form_state);
 
-    foreach ($form_state->getValue('hm_newsletter_fieldset') as $key => $value) {
+    foreach ($form_state->getValue('hm_newsletter_general_settings') as $key => $value) {
       $this->setConfigurationValue($key, $value);
     }
-    foreach ($form_state->getValue('hm_newsletter_fieldset_newsletters') as $key => $value) {
+    foreach ($form_state->getValue('hm_newsletter_fieldset') as $key => $value) {
       $this->setConfigurationValue($key, $value);
     }
     foreach ($form_state->getValue('hm_newsletter_fieldset_content') as $key => $value) {

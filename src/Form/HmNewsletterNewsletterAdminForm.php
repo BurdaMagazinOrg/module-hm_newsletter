@@ -27,14 +27,7 @@ class HmNewsletterNewsletterAdminForm extends ConfigFormBase {
     $config = $this->config('hm_newsletter.settings');
 
     foreach (Element::children($form['hm_newsletter']) as $variable) {
-      if ($variable === 'hm_displayed_agreements') {
-        // Split by "|" and filter empty values.
-        $displayed_agreements = array_filter(explode('|', $form_state->getValue($form['hm_newsletter'][$variable]['#parents'])));
-        $config->set($variable, $displayed_agreements);
-      }
-      else {
-        $config->set($variable, $form_state->getValue($form['hm_newsletter'][$variable]['#parents']));
-      }
+      $config->set($variable, $form_state->getValue($form['hm_newsletter'][$variable]['#parents']));
     }
     $config->save();
 
@@ -63,39 +56,31 @@ class HmNewsletterNewsletterAdminForm extends ConfigFormBase {
       '#title' => $this->t('Harbourmaster newsletter configuration'),
     ];
 
-    $form['hm_newsletter']['hm_environment'] = array(
+    $form['hm_newsletter']['hm_environment'] = [
       '#title' => 'Environment',
-      '#description' => $this->t('Can be overwritten by settings.php via $config[\'hm_newsletter.settings\'][\'hm_environment\'] = \'production\'/\'staging\';.'),
+      '#description' => $this->t("Can be overwritten by settings.php via \$config['hm_newsletter.settings']['hm_environment'] = 'production'/'staging';."),
       '#type' => 'select',
-      '#options' => array(
+      '#options' => [
         'staging' => 'staging',
         'production' => 'production',
-      ),
+      ],
       '#default_value' => $hm_newsletter_settings->get('hm_environment'),
-    );
+    ];
 
-    $form['hm_newsletter']['hm_client_id'] = array(
+    $form['hm_newsletter']['hm_client_id'] = [
       '#title' => $this->t('Client id'),
       '#description' => $this->t('Client id will be used for agreements.'),
       '#type' => 'textfield',
       '#required' => TRUE,
       '#default_value' => $hm_newsletter_settings->get('hm_client_id'),
-    );
+    ];
 
-    $form['hm_newsletter']['hm_imprint_text'] = array(
+    $form['hm_newsletter']['hm_imprint_text'] = [
       '#title' => $this->t('Imprint text'),
       '#description' => $this->t('Text is displayed in the footer of the newsletter subscription form.'),
       '#type' => 'textarea',
       '#default_value' => $hm_newsletter_settings->get('hm_imprint_text'),
-    );
-
-    $displayed_agreements = $hm_newsletter_settings->get('hm_displayed_agreements');
-    $form['hm_newsletter']['hm_displayed_agreements'] = array(
-      '#title' => $this->t('Displayed agreement names (separated by "|")'),
-      '#description' => $this->t('Agreements are used to filter what is displayed for newsletter.'),
-      '#type' => 'textfield',
-      '#default_value' => (empty($displayed_agreements)) ? '' : implode('|', $displayed_agreements),
-    );
+    ];
 
     return parent::buildForm($form, $form_state);
   }

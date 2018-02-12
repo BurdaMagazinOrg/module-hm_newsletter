@@ -5,6 +5,8 @@
  * Update hooks for for HM Newsletter module.
  */
 
+use Drupal\block\Entity\Block;
+
 /**
  * Add new configuration options.
  */
@@ -15,4 +17,93 @@ function hm_newsletter_update_8001() {
     ->getEditable('hm_newsletter.settings')
     ->set('hm_displayed_agreements', ['datenschutzeinwilligung', 'privacy'])
     ->save();
+}
+
+/**
+ * Remove "hm_displayed_agreements" global config setting.
+ *
+ * Update existing block configs to introduce new options.
+ */
+function hm_newsletter_update_8002() {
+  // Read hm_displayed_agreements settings.
+  $configFactory = \Drupal::configFactory();
+  $hmNewsletterSettings = $configFactory->getEditable('hm_newsletter.settings');
+  $hmDisplayedAgreements = $hmNewsletterSettings->get('hm_displayed_agreements');
+
+  // Find/load all existing block instances.
+  $blocks = Block::loadMultiple();
+
+  // Mapping for labels.
+  $labelMappings = [
+    'firstname' => 'Vorname',
+    'name' => 'Nachname',
+    'zipcode' => 'Postleitzahl',
+    'location' => 'Land',
+    'birthdate' => 'Geburtsdatum',
+  ];
+
+  /* @var \Drupal\block\Entity\Block $block */
+  foreach ($blocks as $block) {
+    if ($block->getPlugin()->getBaseId() === 'hm_newsletter_block') {
+      $blockConfig = $configFactory->getEditable('block.block.' . $block->getOriginalId());
+
+      if ($hmDisplayedAgreements) {
+        // Set privacy->required, optin->optional (dependant on global config).
+        if (in_array('privacy', $hmDisplayedAgreements) ||
+          in_array('datenschutzeinwilligung', $hmDisplayedAgreements)) {
+          $blockConfig->set('settings.privacy', 'required')->save(TRUE);
+        }
+
+        if (in_array('anspracheerlaubnis', $hmDisplayedAgreements) ||
+          in_array('optin', $hmDisplayedAgreements) ||
+          in_array('opt-in', $hmDisplayedAgreements)) {
+          $blockConfig->set('settings.optin', 'optional')->save(TRUE);
+        }
+      }
+
+      // Set other basic values.
+      foreach ($blockConfig->get('settings') as $setting => $value) {
+        // Existing configs.
+        switch ($setting) {
+          case 'title':
+            // In case of title, migrate setting to "salutation".
+            $isVisible = $blockConfig->get('settings.' . $setting);
+            $blockConfig->set('settings.salutation', [
+              'is_visible' => $isVisible,
+              'label_display' => ['label' => 'label'],
+              'label_text' => 'Anrede',
+            ]);
+            $blockConfig->clear('settings.' . $setting);
+            break;
+
+          case 'firstname':
+          case 'name':
+          case 'zipcode':
+          case 'location':
+          case 'birthdate':
+            $isVisible = $blockConfig->get('settings.' . $setting);
+            $blockConfig->set('settings.' . $setting, [
+              'is_visible' => $isVisible,
+              'label_display' => ['label' => 'label'],
+              'label_text' => $labelMappings[$setting],
+            ]);
+            break;
+        }
+      }
+
+      // New configs - default value when no source is provided.
+      $blockConfig->set('settings.source', 'web');
+      $blockConfig->set('settings.submit_label', 'Anmelden');
+      $blockConfig->set('settings.email', [
+        'is_visible' => '1',
+        'label_display' => ['label' => 'label'],
+        'label_text' => 'E-Mail',
+      ]);
+
+      $blockConfig->save(TRUE);
+    }
+  }
+
+  // Remove hm_displayed_agreements settings.
+  $hmNewsletterSettings->clear('hm_displayed_agreements')->save();
 }

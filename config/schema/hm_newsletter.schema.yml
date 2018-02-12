@@ -11,9 +11,3 @@ hm_newsletter.settings:
     hm_imprint_text:
       type: string
       label: 'Imprint text'
-    hm_displayed_agreements:
-      type: sequence
-      label: 'List of displayed agreements'
-      sequence:
-        type: string
-        label: 'Agreement index'
