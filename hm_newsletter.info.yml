@@ -1,6 +1,6 @@
 name: 'Harbourmaster newsletter'
 core_version_requirement: ^8.9 || ^9
 package: Harbourmaster
-version: 8.x-2.1
+version: 8.x-2.2
 project: hm_newsletter
 type: module
